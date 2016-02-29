@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "在docker container中启动定时任务"
-date:   2016-02-29 12:59:49 +0000
+date:   2016-02-21 12:59:49 +0000
 categories: docker
 ---
 ##设置cron
