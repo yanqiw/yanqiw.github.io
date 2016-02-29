@@ -9,7 +9,7 @@ categories: docker
 
 下面是以ubuntu为例的`Dockerfile`:
 
-```Dockerfile
+{% highlight Dockerfile %}
 FROM ubuntu:14.04
 
 #创建脚本路径
@@ -35,18 +35,18 @@ WORKDIR /code
 
 CMD ["bash","/code/run.sh"]
 
-```
+{% endhighlight %}
 
 
 
 **run.sh**
 
-```bash
+{% highlight bash %}
 rsyslogd
 cron
 touch /var/log/cron.log
 tail -F /var/log/syslog /var/log/cron.log
-```
+{% endhighlight %}
 
 `tail -F /var/log/syslog /var/log/cron.log`这里用来输出系统和cron日志，并保持container运行
 
@@ -54,9 +54,9 @@ tail -F /var/log/syslog /var/log/cron.log
 
 **crontabfile example**
 
-```bash
+{% highlight bash %}
 0 23 * * *  python /code/run.py cron >> /var/log/cron.log 2>&1
-```
+{% endhighlight %}
 
 `python /code/run.py`是要运行的定时任务。
 
@@ -74,10 +74,10 @@ tail -F /var/log/syslog /var/log/cron.log
 
 **run.py**
 
-```python
+{% highlight python %}
 if __name__ == '__main__':
   print "I am runing by crontab"
-```
+{% endhighlight %}
 
 
 
