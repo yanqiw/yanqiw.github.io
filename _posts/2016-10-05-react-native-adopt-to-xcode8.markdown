@@ -7,19 +7,24 @@ date: "2016-10-05 14:23:40"
 React Native 0.27.0 adopt to xcode 8
 ====
 # RCTSRWEBSOCKET.M error
+
 > Ignoring return value of function declared with warn_unused_result attribute
 
 Find line
+
 > SecRandomCopyBytes(kSecRandomDefault, sizeof(uint32_t), (uint8_t *)mask_key);
 
 Change to
+
 > (void)SecRandomCopyBytes(kSecRandomDefault, sizeof(uint32_t), (uint8_t *)mask_key);
 
 
 Find line
+
 > SecRandomCopyBytes(kSecRandomDefault, keyBytes.length, keyBytes.mutableBytes);
 
 Change to
+
 > (void)SecRandomCopyBytes(kSecRandomDefault, keyBytes.length, keyBytes.mutableBytes);
 
 
