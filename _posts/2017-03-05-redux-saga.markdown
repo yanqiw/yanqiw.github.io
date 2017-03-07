@@ -17,19 +17,20 @@ Redux Saga 实践
 
 刚开始了解Saga时，看官方解释，并不是很清楚到底是什么？Saga的副作用(side effects)到底是什么?
 
-通读了[官方文档](https://github.com/redux-saga/redux-saga)后，大概了解到，副作用就是在action触发reduser之后执行的一些动作， 这些动作包括但不限于，连接网络，io读写，触发其他action。并且，因为Sage的副作用也是通过redux的中间件，每一个action，sage都会像reduser一样加收到，通过触发不同的action, 我们可以控制这些副作用的状态， 例如，启动，停止，取消。 
+通读了[官方文档](https://github.com/redux-saga/redux-saga)后，大概了解到，副作用就是在action触发reduser之后执行的一些动作， 这些动作包括但不限于，连接网络，io读写，触发其他action。并且，因为Sage的副作用是通过redux的action触发的，每一个action，sage都会像reduser一样接收到。并且通过触发不同的action, 我们可以控制这些副作用的状态， 例如，启动，停止，取消。 
 
 所以，我们可以理解为Sage是一个可以用来处理复杂的异步逻辑的模块，并且由redux的action触发。 
 
 # 使用Saga解决的问题
-最初，在开始探究Saga之前，我们是希望寻求一种方式来隔离开应用前端的`展现层`，`业务层`和`数据层`。 大概想法是使用react展现数据，redux管理数据，然后借助redux的middleware来实现业务层。这样原有的已react为核心的项目架构，变成了已redux为核心的架构。
+最初，在开始探究Saga之前，我们是希望寻求一种方式来隔离开应用前端的`展现层`，`业务层`和`数据层`。 大概想法是使用react展现数据，redux管理数据，然后借助redux的middleware来实现业务层。这样原有的react为核心的项目架构，变成了redux为核心的架构。
  
-在最初的调研中`redux-thunk`是比较符合以上的定位的，`redux-thunk`是在action作用到reducer之前触发一些业务操作。刚好起到控制层的作用。
+在最初的调研中`redux-thunk`是首先考虑的，`redux-thunk`是在action作用到reducer之前触发一些业务操作。刚好起到控制层的作用。
 
-但是，马上了解到了`redux-sage`，因为大家都在对比两者。本文并不会做对比，在文章的最后会罗列一些为什么选了Saga而不是thunk的原因，仅供参考。
+但是，马上了解到了`redux-sage`，因为大家都在对比两者。本文并不会做对比，在文章的最后会简单介绍为什么选了Saga而不是thunk的原因，仅供参考。 
 
-最终，选择了Saga来处理应用的`控制层`。 下面是一个简单的例子：
+在浏览了很多比较文章后，最终，我们选择了redux-saga来处理应用的`控制层`。 
 
+下面是一个简单的例子：
 > 在用户提交表单的时候，我们想要做如下事情：
 > - 校验一些输入信息 (简单， 写在组件里)
 > - 弹起提示信息（聪明的我，一定要写一个公用的提示信息模块，这样别的页面引入就可以用了， 呵呵呵呵。。。）
@@ -40,13 +41,13 @@ Redux Saga 实践
 
 好了，现在我们要把刚刚做的事情加到所有的表单上。。。 （WTF, 每个form组件都要做同样的事情。。。页面的代码丑的不想再多看一眼。。。）
 
-用了saga之后：
+用了redux-saga之后：
 - form组件触发提交action (一行简单的dispatch)
 - reducer这个action不需要我处理 （打酱油了）
 - saga提交表单的副作用走起～ （监听到触发副作用的action）
     - 校验一下
     - 通知`显示层`弹起信息框 （dispatch一下变更控制信息框弹起的store）
-    - 提交表单 (yeild一个promis，这个稍后解释)
+    - 提交表单 (yeild一个promis，yeild是javascript generator的语法，稍后有介绍)
     - 拿到后端返回状态
     - 更新redux store (dispatch一下)
 
@@ -58,7 +59,7 @@ Redux Saga 实践
 # 开始前需要了解的几个概念
 
 ## redux中间件
-[redux中文文档解释](http://cn.redux.js.org/)如下：
+[redux中文文档](http://cn.redux.js.org/)解释如下：
 > 如果你使用过 Express 或者 Koa 等服务端框架, 那么应该对 middleware 的概念不会陌生。 在这类框架中，middleware 是指可以被嵌入在框架接收请求到产生响应过程之中的代码。例如，Express 或者 Koa 的 middleware 可以完成添加 CORS headers、记录日志、内容压缩等工作。middleware 最优秀的特性就是可以被链式组合。你可以在一个项目中使用多个独立的第三方 middleware。
 
 > 相对于 Express 或者 Koa 的 middleware，Redux middleware 被用于解决不同的问题，但其中的概念是类似的。它提供的是位于 action 被发起之后，到达 reducer 之前的扩展点。 你可以利用 Redux middleware 来进行日志记录、创建崩溃报告、调用异步接口或者路由等等。
@@ -104,7 +105,7 @@ sagaMiddleware.run(mySaga)
 
 `takeEvery`会在接到相应的action之后不断产生新的副作用。 比如，做一个计数器按钮，用户需要不断的点击按钮，对后台数据更新，这里可以使用`takeEvery`来触发。
 
-`takeLatest`在相同的action被触发多次的时候，之前的副作用如果没有执行完，会被取消掉，之后最后一次action触发的副作用可以执行完。比如，我们需要一个刷新按钮， 让用户可以手动的从后台刷新数据， 当用户不停单机刷新的时候， 应该之后最新一次的请求数据被刷新在页面上，这里可以使用`takeLatest`。
+`takeLatest`在相同的action被触发多次的时候，之前的副作用如果没有执行完，会被取消掉，只有最后一次action触发的副作用可以执行完。比如，我们需要一个刷新按钮， 让用户可以手动的从后台刷新数据， 当用户不停单机刷新的时候， 应该最新一次的请求数据被刷新在页面上，这里可以使用`takeLatest`。
 
 ```javascript
 import { call, put } from 'redux-saga/effects'
@@ -124,27 +125,27 @@ function* watchFetchData() {
 }
 ```
 
-注意，`takeEvery`第一个参数可以是数组，或者方法。 也可以有第三个参数用来传递变量给方法。
+注意，`takeEvery`第一个参数可以是数组或者方法。 也可以有第三个参数用来传递变量给方法。
 
 ## call方法
-call有些类似Javascript中的call函数， 不同的是它可以接受一个返回promise的函数，使用生成器的方式来把异步变同步方法。
+call有些类似Javascript中的call函数， 不同的是它可以接受一个返回promise的函数，使用生成器的方式来把异步变同步。
 
 ## put方法
-put其实就是redux的dispatch，用来触发reducer更新store
+put就是redux的dispatch，用来触发reducer更新store
 
 # 有什么弊端
 目前在项目实践中遇到的一些问题：
-- redux-saga模型的理解和学习需要投入很多经历
-- 因为需要用action触发，所以会产生很多对于reducer无用的action, 但是reducer一样会跑一轮，虽然目前没有观测到性能下降，但还是有计算开销。
-- 在action的定义上要谨慎，避免action在saga和reducer之间重复触发
+- redux-saga模型的理解和学习需要投入很多精力
+- 因为需要用action触发，所以会产生很多对于reducer无用的action, 但是reducer一样会跑一轮，虽然目前没有观测到性能下降，但还是有计算开销
+- 在action的定义上要谨慎，避免action在saga和reducer之间重复触发，造成死循环
 
 # 后记
 总体而言，对于redux-saga的第一次尝试还是很满意的。 在业务逻辑层，可以简化代码，使代码更加容易阅读。 在重用方面，解耦显示层和业务层之后， 代码的重用度也得到了提升。
 
 ## 选择Saga的原因
-开始的时候一直在犹豫是否需要使用Saga或thunk，因为并不能很好的把握这两者到底解决了什么问题。之后，在浏览文章的时候看到了[一遍对比两者的长文](http://blog.isquaredsoftware.com/2017/01/idiomatic-redux-thoughts-on-thunks-sagas-abstraction-and-reusability/)，列出了不少开发者对两者的担忧和争论，其中不乏闪光的观点，长文的最后作者写到：“不管是否用得上，你都应该尝试一下。”。 这句话是我决定尝试saga或thunk来实践把前端分层的设想。
+开始的时候一直在犹豫是否需要使用Saga或thunk，因为并不能很好的把握这两者到底解决了什么问题。之后，在浏览文章的时候看到了[一遍对比两者的长文](http://blog.isquaredsoftware.com/2017/01/idiomatic-redux-thoughts-on-thunks-sagas-abstraction-and-reusability/)，列出了不少开发者对两者的担忧和争论，其中不乏闪光的观点，长文的最后作者写到：“不管是否用得上，你都应该尝试一下”。 这句话使我决定了尝试用saga或thunk来实践把前端分层的设想。
 
-之所以最后选择了saga是因为下面这段youtube的视频：
-[On the Spectrum of Abstraction](https://www.youtube.com/watch?v=mVVNJKv9esE)
+之所以最后选择了saga是因为这段 Cheng Lou 的视频：
+[On the Spectrum of Abstraction](https://www.youtube.com/watch?v=mVVNJKv9esE) (youtube)
 
-视频中讲述了在一种抽象的概念下如何去选择一种技术。 其中一个理论是：越是用来解决具体问题的技术，使用起来更容易，更高效，学习成本更低；越是用来解决宽泛问题的技术，使用起来越不容易，学习成本越高。 thunk解决的是很具体的一个问题，就是在action到达reducer之前做一些其他的业务，比如fetch后端, 它在做这件事的上很高效。而Saga解决的问题要更宽泛一些，因为saga只是拦截了action，至于做什么，开发者需要自己来考虑，可以是fetch后端，也可以是更新redux store, 甚至可以执行action带进来的callback。 很显然对于一个`业务层`来说,saga会是一个更合适的选择，但同时也带来了学习成本的提高。 
+视频中讲述了在一种抽象的概念下如何去选择一种技术。 其中一个理论是：越是用来解决具体问题的技术，使用起来越容易，越高效，学习成本越低；越是用来解决宽泛问题的技术，使用起来越难，学习成本越高。 thunk解决的是很具体的一个问题，就是在action到达reducer之前做一些其他的业务，比如fetch后端, 它在做这件事的上很高效。而Saga解决的问题要更宽泛一些，因为saga只是拦截了action，至于做什么，开发者需要自己来考虑，可以是fetch后端，也可以是更新redux store, 甚至可以执行action带进来的callback。 很显然对于一个`业务层`来说,saga会是一个更合适的选择，但同时也带来了学习成本的提高。 
