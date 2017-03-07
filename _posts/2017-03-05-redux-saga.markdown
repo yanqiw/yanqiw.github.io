@@ -50,7 +50,7 @@ Redux Saga 实践
     - 拿到后端返回状态
     - 更新redux store (dispatch一下)
 
-![redux-saga 在项目中的结构](../img/redux-saga-01.jpg)
+![redux-saga 在项目中的结构](https://github.com/yanqiw/yanqiw.github.io/raw/master/img/redux-saga-01.jpg)
 可以看到在使用了Saga后，react只负责数据如何展示，redux来负责数据的状态和绑定数据到react，而Saga处理了大部分复杂的业务逻辑。
 
 通过这个改变，前端应用的代码结构更加清晰，业务层可复用的部分增加。当然，Saga对自动化测试也支持的很好，可以将逻辑单独使用自动化脚本测试，提高项目质量。
