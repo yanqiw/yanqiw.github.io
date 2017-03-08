@@ -47,7 +47,7 @@ Redux Saga 实践
 - saga提交表单的副作用走起～ （监听到触发副作用的action）
     - 校验一下
     - 通知`显示层`弹起信息框 （dispatch一下变更控制信息框弹起的store）
-    - 提交表单 (yeild一个promis，yeild是javascript generator的语法，稍后有介绍)
+    - 提交表单 (yield一个promis，yield是javascript generator的语法，稍后有介绍)
     - 拿到后端返回状态
     - 更新redux store (dispatch一下)
 
