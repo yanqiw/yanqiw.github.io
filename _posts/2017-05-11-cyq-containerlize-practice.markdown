@@ -61,7 +61,7 @@ Rancher相对于前两个选择，有着开箱即用的特性，提供了完整�
 第一个POC是在阿里云容器服务上做的，因为`阿里云容器服务`采用Docker Swarm基础， 而且提供了一套完成的UI控制界面。 借助[官方提供的文档](https://help.aliyun.com/product/25972.html)，1天内完成了三台服务器节点的测试集群搭建，并发布了几个测试服务。一切进行的很顺利，第二天开始陆续将全部服务都部署上去，并开始性能和压力测试。 
 
 阿里云容器服务架构如下(来自官方文档)：
-![photo](http://docs-aliyun.cn-hangzhou.oss.aliyun-inc.com/assets/pic/25978/cn_zh/1475904571001/%E4%BA%A7%E5%93%81%E6%9E%B6%E6%9E%84.png)
+![aliyun container service](../img/aliyun-container-service.png)
 
 ## 第一个问题
 在测试过程中，遇到了第一个问题，响应时间不稳定。 有些服务第一次请求响应时间在几千毫秒到几百毫秒波动， 并不稳定。
