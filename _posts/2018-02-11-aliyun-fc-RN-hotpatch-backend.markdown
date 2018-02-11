@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "阿里函数计算实现简单React Native热更新后台"
+title:  "阿里函数计算实现简单React Native热更新后台"
 date:   "20180211_165811"
 categories: post
 ---
