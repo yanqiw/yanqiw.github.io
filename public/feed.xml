@@ -5,9 +5,24 @@
     <description></description>
     <link>http://frankwang.cn/</link>
     <atom:link href="http://frankwang.cn/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 01 Aug 2021 15:12:33 +0800</pubDate>
-    <lastBuildDate>Sun, 01 Aug 2021 15:12:33 +0800</lastBuildDate>
+    <pubDate>Sun, 01 Aug 2021 17:33:58 +0800</pubDate>
+    <lastBuildDate>Sun, 01 Aug 2021 17:33:58 +0800</lastBuildDate>
     <generator>Jekyll v3.9.0</generator>
+    
+      <item>
+        <title>k8s 自制手册</title>
+        <description>&lt;h1 id=&quot;k8s-自制手册&quot;&gt;k8s 自制手册&lt;/h1&gt;
+&lt;p&gt;记录在阿里云上手动拉起三节点 k8s 的步骤&lt;/p&gt;
+
+</description>
+        <pubDate>Sun, 01 Aug 2021 17:32:00 +0800</pubDate>
+        <link>http://frankwang.cn/post/2021/08/01/k8s-cookbook.html</link>
+        <guid isPermaLink="true">http://frankwang.cn/post/2021/08/01/k8s-cookbook.html</guid>
+        
+        
+        <category>post</category>
+        
+      </item>
     
       <item>
         <title>阿里函数计算实现简单React Native热更新后台</title>
@@ -274,8 +289,8 @@ upf &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;FUNCTION NAME] &lt;span class=
 &lt;/ul&gt;
 </description>
         <pubDate>Sun, 11 Feb 2018 16:58:11 +0800</pubDate>
-        <link>http://frankwang.cn/post/2018/02/11/aliyun-fc-RN-hotpatch-backend.html</link>
-        <guid isPermaLink="true">http://frankwang.cn/post/2018/02/11/aliyun-fc-RN-hotpatch-backend.html</guid>
+        <link>http://frankwang.cn/post/2018/02/11/aliyun-fc-RN-hotpatch-backend-copy.html</link>
+        <guid isPermaLink="true">http://frankwang.cn/post/2018/02/11/aliyun-fc-RN-hotpatch-backend-copy.html</guid>
         
         
         <category>post</category>

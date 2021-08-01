@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: my-blog
+  name: my-blog
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: my-blog
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: my-blog
+  name: my-blog
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-blog
+  template:
+    metadata:
+      labels:
+        app: my-blog
+    spec:
+      containers:
+        - image: registry-vpc.cn-qingdao.aliyuncs.com/yanqiw/yanqiw.github.io
+          name: my-blog
+          resources:
+            limits: # 因为我这里是测试环境，所以这里CPU只分配50毫核（0.05核CPU）和20M的内存
+              cpu: "50m"
+              memory: 20Mi
+            requests: # 保证这个pod初始就能分配这么多资源
+              cpu: "50m"
+              memory: 20Mi
