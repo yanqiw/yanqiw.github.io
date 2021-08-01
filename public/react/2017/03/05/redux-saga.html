@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Redux Saga实践</title>
+  <meta name="description" content="Redux Saga 实践本文用以记录从调研Redux Saga，到应用到项目中的一些收获。">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://frankwang.cn/react/2017/03/05/redux-saga.html">
+  <link rel="alternate" type="application/rss+xml" title="Francis Wang's blog" href="http://frankwang.cn/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Francis Wang's blog</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Redux Saga实践</h1>
+    <p class="post-meta"><time datetime="2017-03-05T17:03:51+08:00" itemprop="datePublished">Mar 5, 2017</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <h1 id="redux-saga-实践">Redux Saga 实践</h1>
+<p>本文用以记录从调研Redux Saga，到应用到项目中的一些收获。</p>
+
+<h1 id="什么是redux-saga">什么是Redux Saga</h1>
+<p><code class="language-plaintext highlighter-rouge">官网解释</code> 来自：<a href="https://github.com/redux-saga/redux-saga">https://github.com/redux-saga/redux-saga</a></p>
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">redux-saga</code> is a library that aims to make side effects (i.e. asynchronous things like data fetching and impure things like accessing the browser cache) in React/Redux applications easier and better.</p>
+</blockquote>
+
+<blockquote>
+  <p>The mental model is that a saga is like a separate thread in your application that’s solely responsible for side effects. redux-saga is a redux middleware, which means this thread can be started, paused and cancelled from the main application with normal redux actions, it has access to the full redux application state and it can dispatch redux actions as well.</p>
+</blockquote>
+
+<p>刚开始了解Saga时，看官方解释，并不是很清楚到底是什么？Saga的副作用(side effects)到底是什么?</p>
+
+<p>通读了<a href="https://github.com/redux-saga/redux-saga">官方文档</a>后，大概了解到，副作用就是在action触发reduser之后执行的一些动作， 这些动作包括但不限于，连接网络，io读写，触发其他action。并且，因为Sage的副作用是通过redux的action触发的，每一个action，sage都会像reduser一样接收到。并且通过触发不同的action, 我们可以控制这些副作用的状态， 例如，启动，停止，取消。</p>
+
+<p>所以，我们可以理解为Sage是一个可以用来处理复杂的异步逻辑的模块，并且由redux的action触发。</p>
+
+<h1 id="使用saga解决的问题">使用Saga解决的问题</h1>
+<p>最初，在开始探究Saga之前，我们是希望寻求一种方式来隔离开应用前端的<code class="language-plaintext highlighter-rouge">展现层</code>，<code class="language-plaintext highlighter-rouge">业务层</code>和<code class="language-plaintext highlighter-rouge">数据层</code>。 大概想法是使用react展现数据，redux管理数据，然后借助redux的middleware来实现业务层。这样原有的react为核心的项目架构，变成了redux为核心的架构。</p>
+
+<p>在最初的调研中<code class="language-plaintext highlighter-rouge">redux-thunk</code>是首先考虑的，<code class="language-plaintext highlighter-rouge">redux-thunk</code>是在action作用到reducer之前触发一些业务操作。刚好起到控制层的作用。</p>
+
+<p>但是，马上了解到了<code class="language-plaintext highlighter-rouge">redux-sage</code>，因为大家都在对比两者。本文并不会做对比，在文章的最后会简单介绍为什么选了Saga而不是thunk的原因，仅供参考。</p>
+
+<p>在浏览了很多比较文章后，最终，我们选择了redux-saga来处理应用的<code class="language-plaintext highlighter-rouge">控制层</code>。</p>
+
+<p>下面是一个简单的例子：</p>
+<blockquote>
+  <p>在用户提交表单的时候，我们想要做如下事情：</p>
+  <ul>
+    <li>校验一些输入信息 (简单， 写在组件里)</li>
+    <li>弹起提示信息（聪明的我，一定要写一个公用的提示信息模块，这样别的页面引入就可以用了， 呵呵呵呵。。。）</li>
+    <li>提交后端服务 （直接组件里面fetch吧。。。）</li>
+    <li>拿到后端返回状态 （promise so easy…）</li>
+    <li>隐藏提示信息 (这个有点难度，不过难不倒我，我给组建加一个控制属性)</li>
+    <li>更新redux store （dispatch咯。。。）</li>
+  </ul>
+</blockquote>
+
+<p>好了，现在我们要把刚刚做的事情加到所有的表单上。。。 （WTF, 每个form组件都要做同样的事情。。。页面的代码丑的不想再多看一眼。。。）</p>
+
+<p>用了redux-saga之后：</p>
+<ul>
+  <li>form组件触发提交action (一行简单的dispatch)</li>
+  <li>reducer这个action不需要我处理 （打酱油了）</li>
+  <li>saga提交表单的副作用走起～ （监听到触发副作用的action）
+    <ul>
+      <li>校验一下</li>
+      <li>通知<code class="language-plaintext highlighter-rouge">显示层</code>弹起信息框 （dispatch一下变更控制信息框弹起的store）</li>
+      <li>提交表单 (yield一个promis，yield是javascript generator的语法，稍后有介绍)</li>
+      <li>拿到后端返回状态</li>
+      <li>更新redux store (dispatch一下)</li>
+    </ul>
+  </li>
+</ul>
+
+<p><img src="https://github.com/yanqiw/yanqiw.github.io/raw/master/img/redux-saga-01.jpg" alt="redux-saga 在项目中的结构" />
+可以看到在使用了Saga后，react只负责数据如何展示，redux来负责数据的状态和绑定数据到react，而Saga处理了大部分复杂的业务逻辑。</p>
+
+<p>通过这个改变，前端应用的代码结构更加清晰，业务层可复用的部分增加。当然，Saga对自动化测试也支持的很好，可以将逻辑单独使用自动化脚本测试，提高项目质量。</p>
+
+<h1 id="开始前需要了解的几个概念">开始前需要了解的几个概念</h1>
+
+<h2 id="redux中间件">redux中间件</h2>
+<p><a href="http://cn.redux.js.org/">redux中文文档</a>解释如下：</p>
+<blockquote>
+  <p>如果你使用过 Express 或者 Koa 等服务端框架, 那么应该对 middleware 的概念不会陌生。 在这类框架中，middleware 是指可以被嵌入在框架接收请求到产生响应过程之中的代码。例如，Express 或者 Koa 的 middleware 可以完成添加 CORS headers、记录日志、内容压缩等工作。middleware 最优秀的特性就是可以被链式组合。你可以在一个项目中使用多个独立的第三方 middleware。</p>
+</blockquote>
+
+<blockquote>
+  <p>相对于 Express 或者 Koa 的 middleware，Redux middleware 被用于解决不同的问题，但其中的概念是类似的。它提供的是位于 action 被发起之后，到达 reducer 之前的扩展点。 你可以利用 Redux middleware 来进行日志记录、创建崩溃报告、调用异步接口或者路由等等。</p>
+</blockquote>
+
+<p>可以简单理解为，中间件是可以在action到达reducer之前做一些事情的层。（有意思的是，saga应该是在reducer被触发之后才触发的。TODO, 需要进一步验证）</p>
+
+<h2 id="javascript-generator">Javascript Generator</h2>
+<p>在使用Saga之前，建议先了解Javascript生成器，因为Saga的副作用都是通过生成器来实现的。</p>
+
+<p>可以在阮一峰的<a href="http://es6.ruanyifeng.com/">ECMAScript 6 入门</a>: <a href="http://es6.ruanyifeng.com/#docs/generator">Generator 函数的语法</a>和<a href="http://es6.ruanyifeng.com/#docs/generator-async">Generator 函数的异步应用</a>章节中了解更多细节。</p>
+
+<h1 id="如何使用">如何使用</h1>
+<p><a href="https://github.com/redux-saga/redux-saga">redux-sage官方文档</a>有很详细的使用说明，这里只做简单的上手说明。</p>
+
+<h2 id="安装redux-sage">安装redux-sage</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm <span class="nb">install</span> <span class="nt">--save</span> redux-saga
+</code></pre></div></div>
+<h2 id="给redux添加中间件">给redux添加中间件</h2>
+<p>在定义生成store的地方，引入并加入redux-sage中间件。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">createStore</span><span class="p">,</span> <span class="nx">applyMiddleware</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">redux</span><span class="dl">'</span>
+<span class="k">import</span> <span class="nx">createSagaMiddleware</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">redux-saga</span><span class="dl">'</span>
+
+<span class="k">import</span> <span class="nx">reducer</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./reducers</span><span class="dl">'</span>
+<span class="k">import</span> <span class="nx">mySaga</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./sagas</span><span class="dl">'</span>
+
+<span class="c1">// create the saga middleware</span>
+<span class="kd">const</span> <span class="nx">sagaMiddleware</span> <span class="o">=</span> <span class="nx">createSagaMiddleware</span><span class="p">()</span>
+<span class="c1">// mount it on the Store</span>
+<span class="kd">const</span> <span class="nx">store</span> <span class="o">=</span> <span class="nx">createStore</span><span class="p">(</span>
+  <span class="nx">reducer</span><span class="p">,</span>
+  <span class="nx">applyMiddleware</span><span class="p">(</span><span class="nx">sagaMiddleware</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1">// then run the saga</span>
+<span class="nx">sagaMiddleware</span><span class="p">.</span><span class="nx">run</span><span class="p">(</span><span class="nx">mySaga</span><span class="p">)</span>
+</code></pre></div></div>
+<h2 id="副作用">副作用</h2>
+<p>副作用，顾名思义，在主要作用（action触发reducer）之外，用来处理其他业务逻辑。redux-saga提供了几种产生副作用的方式, 主要用到了有两种<code class="language-plaintext highlighter-rouge">takeEvery</code>和<code class="language-plaintext highlighter-rouge">takeLates</code>。</p>
+
+<p><code class="language-plaintext highlighter-rouge">takeEvery</code>会在接到相应的action之后不断产生新的副作用。 比如，做一个计数器按钮，用户需要不断的点击按钮，对后台数据更新，这里可以使用<code class="language-plaintext highlighter-rouge">takeEvery</code>来触发。</p>
+
+<p><code class="language-plaintext highlighter-rouge">takeLatest</code>在相同的action被触发多次的时候，之前的副作用如果没有执行完，会被取消掉，只有最后一次action触发的副作用可以执行完。比如，我们需要一个刷新按钮， 让用户可以手动的从后台刷新数据， 当用户不停单机刷新的时候， 应该最新一次的请求数据被刷新在页面上，这里可以使用<code class="language-plaintext highlighter-rouge">takeLatest</code>。</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">call</span><span class="p">,</span> <span class="nx">put</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">redux-saga/effects</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">takeEvery</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">redux-saga</span><span class="dl">'</span>
+
+<span class="k">export</span> <span class="kd">function</span><span class="o">*</span> <span class="nx">fetchData</span><span class="p">(</span><span class="nx">action</span><span class="p">)</span> <span class="p">{</span>
+   <span class="k">try</span> <span class="p">{</span>
+      <span class="kd">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="k">yield</span> <span class="nx">call</span><span class="p">(</span><span class="nx">Api</span><span class="p">.</span><span class="nx">fetchUser</span><span class="p">,</span> <span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">.</span><span class="nx">url</span><span class="p">);</span>
+      <span class="k">yield</span> <span class="nx">put</span><span class="p">({</span><span class="na">type</span><span class="p">:</span> <span class="dl">"</span><span class="s2">FETCH_SUCCEEDED</span><span class="dl">"</span><span class="p">,</span> <span class="nx">data</span><span class="p">});</span>
+   <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">yield</span> <span class="nx">put</span><span class="p">({</span><span class="na">type</span><span class="p">:</span> <span class="dl">"</span><span class="s2">FETCH_FAILED</span><span class="dl">"</span><span class="p">,</span> <span class="nx">error</span><span class="p">});</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">function</span><span class="o">*</span> <span class="nx">watchFetchData</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">yield</span><span class="o">*</span> <span class="nx">takeEvery</span><span class="p">(</span><span class="dl">'</span><span class="s1">FETCH_REQUESTED</span><span class="dl">'</span><span class="p">,</span> <span class="nx">fetchData</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>注意，<code class="language-plaintext highlighter-rouge">takeEvery</code>第一个参数可以是数组或者方法。 也可以有第三个参数用来传递变量给方法。</p>
+
+<h2 id="call方法">call方法</h2>
+<p>call有些类似Javascript中的call函数， 不同的是它可以接受一个返回promise的函数，使用生成器的方式来把异步变同步。</p>
+
+<h2 id="put方法">put方法</h2>
+<p>put就是redux的dispatch，用来触发reducer更新store</p>
+
+<h1 id="有什么弊端">有什么弊端</h1>
+<p>目前在项目实践中遇到的一些问题：</p>
+<ul>
+  <li>redux-saga模型的理解和学习需要投入很多精力</li>
+  <li>因为需要用action触发，所以会产生很多对于reducer无用的action, 但是reducer一样会跑一轮，虽然目前没有观测到性能下降，但还是有计算开销</li>
+  <li>在action的定义上要谨慎，避免action在saga和reducer之间重复触发，造成死循环</li>
+</ul>
+
+<h1 id="后记">后记</h1>
+<p>总体而言，对于redux-saga的第一次尝试还是很满意的。 在业务逻辑层，可以简化代码，使代码更加容易阅读。 在重用方面，解耦显示层和业务层之后， 代码的重用度也得到了提升。</p>
+
+<h2 id="选择saga的原因">选择Saga的原因</h2>
+<p>开始的时候一直在犹豫是否需要使用Saga或thunk，因为并不能很好的把握这两者到底解决了什么问题。之后，在浏览文章的时候看到了<a href="http://blog.isquaredsoftware.com/2017/01/idiomatic-redux-thoughts-on-thunks-sagas-abstraction-and-reusability/">一遍对比两者的长文</a>，列出了不少开发者对两者的担忧和争论，其中不乏闪光的观点，长文的最后作者写到：“不管是否用得上，你都应该尝试一下”。 这句话使我决定了尝试用saga或thunk来实践把前端分层的设想。</p>
+
+<p>之所以最后选择了saga是因为这段 Cheng Lou 的视频：
+<a href="https://www.youtube.com/watch?v=mVVNJKv9esE">On the Spectrum of Abstraction</a> (youtube)</p>
+
+<p>视频中讲述了在一种抽象的概念下如何去选择一种技术。 其中一个理论是：越是用来解决具体问题的技术，使用起来越容易，越高效，学习成本越低；越是用来解决宽泛问题的技术，使用起来越难，学习成本越高。 thunk解决的是很具体的一个问题，就是在action到达reducer之前做一些其他的业务，比如fetch后端, 它在做这件事的上很高效。而Saga解决的问题要更宽泛一些，因为saga只是拦截了action，至于做什么，开发者需要自己来考虑，可以是fetch后端，也可以是更新redux store, 甚至可以执行action带进来的callback。 很显然对于一个<code class="language-plaintext highlighter-rouge">业务层</code>来说,saga会是一个更合适的选择，但同时也带来了学习成本的提高。</p>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Francis Wang's blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>Francis Wang's blog</li>
+          <li><a href="mailto:wangyanq@gmail.com">wangyanq@gmail.com</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/yanqiw"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">yanqiw</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/yanqiw"><span class="icon icon--twitter"><svg viewBox="0 0 16 16"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">yanqiw</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

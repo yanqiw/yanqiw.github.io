@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>阿里函数计算实现简单React Native热更新后台</title>
+  <meta name="description" content="阿里函数计算实现简单React Native热更新后台">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://frankwang.cn/post/2018/02/11/aliyun-fc-RN-hotpatch-backend.html">
+  <link rel="alternate" type="application/rss+xml" title="Francis Wang's blog" href="http://frankwang.cn/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Francis Wang's blog</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">阿里函数计算实现简单React Native热更新后台</h1>
+    <p class="post-meta"><time datetime="2018-02-11T16:58:11+08:00" itemprop="datePublished">Feb 11, 2018</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <h1 id="阿里函数计算实现简单react-native热更新后台">阿里函数计算实现简单React Native热更新后台</h1>
+
+<p><code class="language-plaintext highlighter-rouge">函数计算</code>作为云计算中新一代的计算单元，有着不需要管理服务器设施和更精准的计费方式的优势。它依托于云服务商的多种云资源（对象存储，日志服务等），将需要计算的业务逻辑浓缩在一个函数中，并协调多种其他云资源。收费方式也采用按调用次数和运行时间为计费单位，使得计算资源的计费更精准。对用户来说，在保证业务正常运转的前提下，节省下不少业务闲时的服务器成本。</p>
+
+<p>2014年AWS发布Lambda函数计算服务，经过几年的发展<code class="language-plaintext highlighter-rouge">函数计算</code>也越来越受到开发者的关注。 
+2017年，阿里云发布自己的<code class="language-plaintext highlighter-rouge">函数计算</code>服务</p>
+
+<p>本文记录基于阿里云<code class="language-plaintext highlighter-rouge">函数计算</code>服务，简单实现app热更新后端。</p>
+
+<h1 id="为什么使用函数计算">为什么使用函数计算</h1>
+<p>阿里云的官方文档中介绍了几种函数计算适用的场景：</p>
+<ul>
+  <li><strong>媒资内容分析处理</strong>：通过对象存储上传事件可以触发多个函数，完成转码、元数据抽取等功能。通过事件触发机制，您能够快速整合不同服务，构建一个弹性、高可用的视频后端系统。</li>
+  <li><strong>Severless后端服务</strong>：可以使用 函数计算和 API网关 构建后端，以验证和处理 API 请求。采用函数服务构建灵活拓展架构,轻松创造丰富、个性化的应用程序体验。</li>
+  <li><strong>IoT消息实时处理</strong>：您可以使用函数计算高效的处理实时流数据。例如，实时过滤、聚合、分析IoT设备产生的数据，并将产生的结构化数据保存到数据库中。</li>
+</ul>
+
+<p>可以看出，函数计算主要应用在<code class="language-plaintext highlighter-rouge">事件出发-&gt;简单处理数据-&gt;存入数据库或对象存储</code>场景下。</p>
+
+<p>这个场景也刚好适用于APP热更新的后端的几个核心业务：</p>
+<ul>
+  <li>上传新代码：上传代码到OSS事件-&gt;分析代码-&gt;更新最新版本信息</li>
+  <li>发布最新代码：发布事件-&gt;查询要发布代码-&gt;发布代码到环境</li>
+  <li>APP查询更新：最新版本查询事件-&gt;比对app版本与最新版本-&gt;返回结果</li>
+</ul>
+
+<p>从费用方面考虑，<code class="language-plaintext highlighter-rouge">函数计算</code>现在的免费配额基本可以满是日常试用，所以决定用<code class="language-plaintext highlighter-rouge">函数计算</code>来支撑热更新服务。</p>
+
+<h1 id="架构总览">架构总览</h1>
+<p>使用函数计算，主要是通过云上的资源来触发函数，然后由函数处理数据，并调度其他云资源。
+<strong>热更新服务架构图</strong>
+<img src="https://ws4.sinaimg.cn/large/006tNc79ly1fo80xlccycj30vp0dmmz9.jpg" alt="架构纵览" /></p>
+
+<h2 id="基本组件">基本组件</h2>
+<p>在热更新业务中，主要涉及了以下几个组件。</p>
+
+<h3 id="函数计算">函数计算</h3>
+<p>函数计算作为承载业务的应用层，替代了传统使用ECS服务搭建的应用服务器。</p>
+
+<h3 id="对象存储">对象存储</h3>
+<p>对象存储用来做简单的数据持久化和存储热更新包。</p>
+
+<h3 id="日志服务">日志服务</h3>
+<p>日志在函数计算中很重要。因为函数容器在运行结束后立即被销毁，运行过程中的日志也会随着容器同事销毁。只有在函数运行时将日志输出到日志服务，才能在之后查询到函数的运行记录。也因为如此，在函数调试时，我们更需要日志服务来查看函数的运行状况。</p>
+
+<h3 id="api网关">API网关</h3>
+<p>API网关为函数计算提供了对外提供Web API接口的能力，同时也提供了身份认证和授权两大重要功能。在API网关中，用户可以定义提供的接口签名，并授权给特定的用户使用Web API。</p>
+
+<h2 id="业务流">业务流</h2>
+<h3 id="上传代码">上传代码</h3>
+<ol>
+  <li>用户通过OSS命令行或OSS控制台直接上传代码到指定目录</li>
+  <li>OSS触发函数计算执行相应业务</li>
+  <li>函数计算将结果保存回OSS指定目录</li>
+</ol>
+
+<h3 id="检查更新">检查更新</h3>
+<ol>
+  <li>APP客户端访问API网关提供的API</li>
+  <li>API网关调用函数计算检查版本</li>
+  <li>API网关将函数计算结果返回给客户端</li>
+</ol>
+
+<h1 id="基本概念">基本概念</h1>
+<p>函数计算有几个主要的概念，在开始前需要了解。</p>
+
+<h2 id="角色和授权">角色和授权</h2>
+<p>函数计算本身只处理业务逻辑，当函数计算需要与阿里云上其他资源交互的时候，就需要利用阿里云的RAM(访问控制)系统来给函数一个<code class="language-plaintext highlighter-rouge">角色和授权</code>来和其他云资源交互。函数在运行时，可以通过默认传入函数的<code class="language-plaintext highlighter-rouge">context</code>变量获取角色的凭证，并扮演该角色与已授权的云资源进行交互。</p>
+
+<p>关于如何为函数服务创建角色的详细内容可以参考<a href="https://help.aliyun.com/document_detail/60247.html">应用示例2 - 授权函数访问其他云服务资源</a></p>
+
+<h2 id="触发器和事件">触发器和事件</h2>
+<p>事件是当其他云资源需要触发函数计算处理时，发送给函数计算服务的一段包含特定事件详情的信息。其他云资源可以定义什么时候触发事件（即定义触发器），不同资源，触发事件后发送给函数计算的事件详情不同。</p>
+
+<p>注：目前阿里云上只有<code class="language-plaintext highlighter-rouge">AIP网关</code>和<code class="language-plaintext highlighter-rouge">OSS对象存储</code>支持创建触发器。</p>
+
+<p>更多细节可参考<a href="https://help.aliyun.com/document_detail/53097.html">应用示例4 - 触发器管理</a></p>
+
+<h2 id="服务">服务</h2>
+<p>服务是管理函数的最小单位，每个函数都只属于一个服务。 服务中可以定义函数可以使用的’角色’和日志输出的仓库，所有<code class="language-plaintext highlighter-rouge">函数</code>共享所属<code class="language-plaintext highlighter-rouge">服务</code>的这些设定。</p>
+
+<h2 id="函数">函数</h2>
+<p><code class="language-plaintext highlighter-rouge">函数</code>是运行代码的容器。用户自己编写需要处理的业务，并放在相应语言的函数容器中运行。</p>
+
+<p>注：目前阿里云支持<code class="language-plaintext highlighter-rouge">nodejs</code>, <code class="language-plaintext highlighter-rouge">python</code>和<code class="language-plaintext highlighter-rouge">java</code></p>
+
+<h1 id="实现步骤">实现步骤</h1>
+<p>简单介绍，搭建热更新后端的步骤。</p>
+<h2 id="工具">工具</h2>
+<p>用户可以在阿里云控制台中操作创建<code class="language-plaintext highlighter-rouge">服务</code>和<code class="language-plaintext highlighter-rouge">函数</code>，更方便的做法是使用行数计算命令行工具<code class="language-plaintext highlighter-rouge">fcli</code>进行创建。在下面的步骤中，采用fcli的方式介绍。
+<a href="https://help.aliyun.com/document_detail/52995.html">fcli下载及文档</a></p>
+
+<p>初次使用fcli需要使用阿里云账号登陆。 注：如果使用子账号登陆，子账号需要有操作RAM和函数计算的授权。
+运行：</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fcli shell
+
+Please input the endpoint <span class="o">(</span>example: https://account_id.cn-shanghai.fc.aliyuncs.com<span class="o">)</span>:
+<span class="o">&gt;</span> <span class="o">[</span>ENDPOINT]
+Please input the access key <span class="nb">id</span>:
+<span class="o">&gt;</span> <span class="o">[</span>FAKE_ACCESS_KEY_ID]
+Please input the access key secret:
+<span class="o">&gt;</span> <span class="o">[</span>FAKE_ACCESS_KEY_SECRET]
+Store the configuration <span class="k">in</span>: /Users/testuser/.fcli
+Welcome to the <span class="k">function </span>compute world. Have fun!
+</code></pre></div></div>
+<p>获取endpoint，请参考<a href="https://help.aliyun.com/document_detail/52984.html">服务入口文档</a>。
+获取access key id/secret，请参考<a href="https://help.aliyun.com/knowledge_detail/38738.html">相关文档</a>。</p>
+
+<h2 id="创建角色授权">创建角色授权</h2>
+<p>当函数计算和其他云资源有交互的时候，需要创建两种角色授权，一种是授权给其他云资源使用触发函数计算的角色， 另一种是授权给函数计算使用云资源的角色。</p>
+
+<h3 id="触发函数计算">触发函数计算</h3>
+<p>创建触发函数计算角色，用来授权给其他云资源调用函数计算服务。 例如，授权api网关调用函数计算，或对象存储服务触发函数计算。</p>
+
+<p>运行：</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkir fc-invoke-function
+mkrp fc-invoke-all <span class="nt">-a</span> <span class="s1">'"fc:InvokeFunction"'</span> <span class="nt">-r</span> <span class="s1">'"*"'</span>
+attach <span class="nt">-p</span> /ram/policies/fc-invoke-all <span class="nt">-r</span> /ram/roles/fc-invoke-function
+</code></pre></div></div>
+
+<h3 id="对象存储及日志服务读写">对象存储及日志服务读写</h3>
+<p>创建其他云资源调用角色，用来让函数计算服务可以访问<code class="language-plaintext highlighter-rouge">日志服务</code>和<code class="language-plaintext highlighter-rouge">OSS对象存储</code>服务。</p>
+
+<p>运行：</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mksr fc-oss-log-op
+mkrp fc-oss-log-gp <span class="nt">-a</span> <span class="s1">'["oss:GetObject", "oss:PutObject", "log:PostLogStoreLogs", "log:GetLogStore"]'</span> <span class="nt">-r</span> <span class="s1">'"*"'</span>
+attach <span class="nt">-p</span> /ram/policies/fc-oss-log-gp <span class="nt">-r</span> /ram/roles/fc-oss-log-op
+mks oss_demo <span class="nt">-r</span> acs:ram::[ALIYUN ACCOUNT <span class="nb">id</span><span class="o">]</span>:role/fc-oss-log-op
+</code></pre></div></div>
+<p>注：这里为了演示方便，并没有限制具体可操作资源，用户需要更具具体情况合理的限制可操作资源。</p>
+
+<h2 id="创建日志库">创建日志库</h2>
+<p>创建日志库来，用来收集函数日志。 具体步骤可以参考<a href="https://help.aliyun.com/document_detail/61023.html">函数访问日志服务</a></p>
+
+<p>这里创建一个日志项目名为<code class="language-plaintext highlighter-rouge">fc-beijing</code>， 仓库名为<code class="language-plaintext highlighter-rouge">hotpatch</code>的日志库。</p>
+
+<h2 id="创建oss">创建OSS</h2>
+<p>热更新的代码需要存放在OSS中，所以需要创建一个与函数服务在同一个区存储空间。名字为<code class="language-plaintext highlighter-rouge">hotpatch</code>, 且读写权限为‘公共读，私有写’。</p>
+
+<h2 id="创建函数服务">创建函数服务</h2>
+<p>在阿里控制台选择函数服务，创建名为<code class="language-plaintext highlighter-rouge">hotpatchService</code>的函数服务，选择刚创建的日志库<code class="language-plaintext highlighter-rouge">hotpatch</code>和<code class="language-plaintext highlighter-rouge">fc-oss-log-op</code>这个角色。
+<img src="https://ws1.sinaimg.cn/large/006tNc79ly1fo80vw9gq9j30j00iujtb.jpg" alt="创建函数服务" /></p>
+
+<h2 id="创建项目">创建项目</h2>
+<p>函数服务本身每一个函数都是独立的代码片段处理业务的某一个部分，自身就像一个小的项目。但是，一个服务下的所有函数，却是在处理同一块业务。</p>
+
+<p>热更新项目的结构，借鉴了一些开源项目包含多个子项目的代码管理思路，把服务作为一个项目，每一个函数作为子项目。达到，服务的所有函数代码使用同一个代码库管理，但每个函数的代码又是独立的可以自行管理依赖，测试，发布等操作。</p>
+
+<p>因为采用nodejs开发，所以使用<a href="https://lernajs.io">lerna</a>作为管理项目和子项目的工具。项目目录如下：</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>├── README.md
+├── lerna.json
+├── package.json
+├── packages
+│   ├── getLatestBundle
+│   │   ├── index.js
+│   │   └── package.json
+│   └── uploadBundle
+│       ├── index.js
+│       ├── node_modules
+│       ├── package-lock.json
+│       └── package.json
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">packages</code>目录下存放着不同的函数，每个函数是一个文件夹, 使用函数名字命名，例如<code class="language-plaintext highlighter-rouge">uploadBundle</code>。没个函数使用<code class="language-plaintext highlighter-rouge">package.json</code>管理依赖包。</p>
+
+<h2 id="上传uploadbundle代码">上传UploadBundle代码</h2>
+<p>在uploadBunde目录下运行</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fcli shell
+mkf uploadBundle <span class="nt">-h</span> index.handler <span class="nt">-t</span> nodejs6
+</code></pre></div></div>
+
+<h2 id="上传getlatestbundle代码">上传getLatestBundle代码</h2>
+<p>上传getLatestBundle代码</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fcli shell
+mkf getLatestBundle <span class="nt">-h</span> index.handler <span class="nt">-t</span> nodejs6
+</code></pre></div></div>
+
+<h2 id="更新代码">更新代码</h2>
+<p>使用编辑器编辑本地代码后，在函数文件夹运行</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fcli shell
+upf <span class="o">[</span>FUNCTION NAME] <span class="nt">-h</span> index.handler <span class="nt">-t</span> nodejs6
+</code></pre></div></div>
+
+<h2 id="创建触发器">创建触发器</h2>
+<p>目前只有OSS对象存储服务，支持创建函数触发器，用户可以定义当存储空间内某些操作执行后触发函数，例如用户上传新的对象后，触发函数。</p>
+
+<p>在热更新后台中，需要在有新代码上传后，对代码进行md5计算，并放入测试环境。</p>
+
+<p>创建触发器config.yaml, 定义OSS触发函数的事件</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">triggerConfig</span><span class="pi">:</span>
+    <span class="na">events</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">oss:ObjectCreated:*</span>
+    <span class="na">filter</span><span class="pi">:</span>
+        <span class="na">key</span><span class="pi">:</span>
+            <span class="na">prefix</span><span class="pi">:</span> <span class="s">src/</span>
+            <span class="na">suffix</span><span class="pi">:</span> <span class="s">.js</span>
+</code></pre></div></div>
+
+<p>在bash中运行：</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkt uploadBundle <span class="nt">-t</span> oss <span class="nt">-r</span> acs:ram::[ALIYUN ACCOUNT <span class="nb">id</span><span class="o">]</span>:role/fc-invoke-function <span class="nt">-s</span> acs:oss:[REGION]:[ALIYUN ACCOUNT ID]:hotpatch <span class="nt">-c</span> config.yaml
+</code></pre></div></div>
+
+<h2 id="api网关-1">API网关</h2>
+<p>当使用函数计算作为Web API服务后端时，需要使用API网关来定义Web API的接口，并由API网关转换客户端请求后，调用函数计算服务。</p>
+
+<p>在更新后台中，检测版本更新需要以Web API的形式提供给APP客户端访问。</p>
+
+<h3 id="步骤">步骤：</h3>
+<h4 id="在阿里云控制台中打开api网关创建名为hotpatchapigroup的分组">在阿里云控制台中打开<code class="language-plaintext highlighter-rouge">API网关</code>，创建名为<code class="language-plaintext highlighter-rouge">hotpatchAPIGroup</code>的<code class="language-plaintext highlighter-rouge">分组</code></h4>
+<p><img src="https://ws2.sinaimg.cn/large/006tNc79ly1fo95v5dsrnj31080kg40i.jpg" alt="创建分组" /></p>
+
+<h4 id="创建名为getlatestbundle的api">创建名为<code class="language-plaintext highlighter-rouge">getLatestBundle</code>的API</h4>
+<p>安全方式暂时选则<code class="language-plaintext highlighter-rouge">无认证</code>，在后面的<code class="language-plaintext highlighter-rouge">安全</code>章节中会介绍如何开启认证。</p>
+
+<p>创建API
+<img src="https://ws1.sinaimg.cn/large/006tNc79ly1fo96d1kcnzj30wc0tcadh.jpg" alt="创建API" /></p>
+
+<p>请求基础定义
+<img src="https://ws1.sinaimg.cn/large/006tNc79ly1fo96fmi1iuj30qa0qujui.jpg" alt="请求基础定义" /></p>
+
+<p>后端基础定义
+<img src="https://ws2.sinaimg.cn/large/006tNc79ly1fo96mpy5f2j30py0oxq6j.jpg" alt="后端基础定义" /></p>
+
+<p>定义返回结果</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"isBase64Encoded"</span><span class="p">:</span><span class="kc">true</span><span class="err">|</span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"statusCode"</span><span class="p">:</span><span class="err">httpStatusCode</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"headers"</span><span class="p">:{</span><span class="err">response</span><span class="w"> </span><span class="err">headers</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"body"</span><span class="p">:</span><span class="s2">"..."</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>注：更详细步骤可参考<a href="https://help.aliyun.com/document_detail/66672.html">API网关触发函数计算</a></p>
+
+<h1 id="安全">安全</h1>
+<p>在之前创建API时，选择了<code class="language-plaintext highlighter-rouge">无认证</code>，在学习使用函数计算作为API服务后端时是可以简化概念，把重点放在如何链接两个服务上。 在真实项目中，我们依然希望API的访问是可控的，只有授权过的客户端才可以访问。</p>
+
+<p>API网关服务提供了一种基于应用的认证授权的机制，用户可以在API网关中创建一个应用，并在API中设置安全方式为<code class="language-plaintext highlighter-rouge">阿里云APP</code>, 签名算法为<code class="language-plaintext highlighter-rouge">HmacSHA256</code>。 之后，在<code class="language-plaintext highlighter-rouge">授权信息</code>中添加应用访问API的授权。</p>
+
+<p>注：详细步骤可参考<a href="https://help.aliyun.com/document_detail/29497.html">授权给应用</a></p>
+
+<h1 id="后记">后记</h1>
+<p><code class="language-plaintext highlighter-rouge">热更新后</code>端作为技术验证项目，已经部署在测试环境，生产环境暂时没有开启。</p>
+
+<p>目前，还有几处不完善的地方：</p>
+<ul>
+  <li>发布函数</li>
+  <li>客户端命令行</li>
+  <li>针对不同版本做diff patch，使更新包更小。</li>
+</ul>
+
+<h2 id="todo">TODO</h2>
+<ul>
+  <li>公开项目代码</li>
+</ul>
+
+<h1 id="附录">附录</h1>
+<h2 id="参考文档">参考文档</h2>
+<ul>
+  <li><a href="https://help.aliyun.com/document_detail/51783.html">函数服务开发手册</a></li>
+  <li><a href="https://help.aliyun.com/document_detail/54788.html">以函数计算作为 API 网关后端服务</a></li>
+</ul>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Francis Wang's blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>Francis Wang's blog</li>
+          <li><a href="mailto:wangyanq@gmail.com">wangyanq@gmail.com</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/yanqiw"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">yanqiw</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/yanqiw"><span class="icon icon--twitter"><svg viewBox="0 0 16 16"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">yanqiw</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
