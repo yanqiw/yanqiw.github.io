@@ -5,8 +5,8 @@
     <description></description>
     <link>http://frankwang.cn/</link>
     <atom:link href="http://frankwang.cn/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 08 Aug 2021 13:38:14 +0800</pubDate>
-    <lastBuildDate>Sun, 08 Aug 2021 13:38:14 +0800</lastBuildDate>
+    <pubDate>Sun, 08 Aug 2021 14:22:56 +0800</pubDate>
+    <lastBuildDate>Sun, 08 Aug 2021 14:22:56 +0800</lastBuildDate>
     <generator>Jekyll v3.9.0</generator>
     
       <item>
@@ -114,6 +114,7 @@ kubectl &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-system describe se
   &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/xiao987334176/p/11317844.html&quot;&gt;K8s 安装&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;https://segmentfault.com/a/1190000023130407&quot;&gt;Dashboard 安装&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;https://www.toutiao.com/c/user/token/MS4wLjABAAAA0YFomuMNm87NNysXeUsQdI0Tt3gOgz8WG_0B3MzxsmI/?is_new_connect=0&amp;amp;is_new_user=0&amp;amp;tab=article&quot;&gt;K8s 搭建step by step&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/yanqiw/k8s-study-yaml&quot;&gt;k8s 基础组建相关部署 YAML&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 </description>
         <pubDate>Sun, 01 Aug 2021 17:32:00 +0800</pubDate>

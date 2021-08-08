@@ -13,6 +13,8 @@ baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://frankwang.cn" # the base hostname & protocol for your site
 twitter_username: yanqiw
 github_username: yanqiw
+#theme
+theme: just-the-docs
 
 # Build settings
 markdown: kramdown
