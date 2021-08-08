@@ -13,8 +13,24 @@ baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://frankwang.cn" # the base hostname & protocol for your site
 twitter_username: yanqiw
 github_username: yanqiw
-#theme
-theme: just-the-docs
 
 # Build settings
 markdown: kramdown
+
+#theme
+remote_theme: pmarsceill/just-the-docs
+theme: just-the-docs
+logo: "/assets/images/just-the-docs.png"
+
+# Aux links for the upper right navigation
+aux_links:
+  "Github":
+    - "//www.github.com/yanqiw"
+
+# Heading anchor links appear on hover over h1-h6 tags in page content
+# allowing users to deep link to a particular heading on a page.
+#
+# Supports true (default) or false
+heading_anchors: true
+# Color scheme supports "light" (default) and "dark"
+color_scheme: dark
