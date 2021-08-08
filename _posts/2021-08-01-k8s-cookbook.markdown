@@ -111,7 +111,6 @@ echo $PASSWORD
 ```
 
 # Reference
-[K8s 安装](https://www.cnblogs.com/xiao987334176/p/11317844.html)
-
-[Dashboard 安装](https://segmentfault.com/a/1190000023130407)
-[K8s 搭建step by step](https://www.toutiao.com/c/user/token/MS4wLjABAAAA0YFomuMNm87NNysXeUsQdI0Tt3gOgz8WG_0B3MzxsmI/?is_new_connect=0&is_new_user=0&tab=article)
+- [K8s 安装](https://www.cnblogs.com/xiao987334176/p/11317844.html)
+- [Dashboard 安装](https://segmentfault.com/a/1190000023130407)
+- [K8s 搭建step by step](https://www.toutiao.com/c/user/token/MS4wLjABAAAA0YFomuMNm87NNysXeUsQdI0Tt3gOgz8WG_0B3MzxsmI/?is_new_connect=0&is_new_user=0&tab=article)

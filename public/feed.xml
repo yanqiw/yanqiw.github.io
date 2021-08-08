@@ -5,8 +5,8 @@
     <description></description>
     <link>http://frankwang.cn/</link>
     <atom:link href="http://frankwang.cn/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 08 Aug 2021 13:30:10 +0800</pubDate>
-    <lastBuildDate>Sun, 08 Aug 2021 13:30:10 +0800</lastBuildDate>
+    <pubDate>Sun, 08 Aug 2021 13:38:14 +0800</pubDate>
+    <lastBuildDate>Sun, 08 Aug 2021 13:38:14 +0800</lastBuildDate>
     <generator>Jekyll v3.9.0</generator>
     
       <item>
@@ -110,10 +110,11 @@ kubectl &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-system describe se
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h1 id=&quot;reference&quot;&gt;Reference&lt;/h1&gt;
-&lt;p&gt;&lt;a href=&quot;https://www.cnblogs.com/xiao987334176/p/11317844.html&quot;&gt;K8s 安装&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://segmentfault.com/a/1190000023130407&quot;&gt;Dashboard 安装&lt;/a&gt;
-&lt;a href=&quot;https://www.toutiao.com/c/user/token/MS4wLjABAAAA0YFomuMNm87NNysXeUsQdI0Tt3gOgz8WG_0B3MzxsmI/?is_new_connect=0&amp;amp;is_new_user=0&amp;amp;tab=article&quot;&gt;K8s 搭建step by step&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/xiao987334176/p/11317844.html&quot;&gt;K8s 安装&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://segmentfault.com/a/1190000023130407&quot;&gt;Dashboard 安装&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.toutiao.com/c/user/token/MS4wLjABAAAA0YFomuMNm87NNysXeUsQdI0Tt3gOgz8WG_0B3MzxsmI/?is_new_connect=0&amp;amp;is_new_user=0&amp;amp;tab=article&quot;&gt;K8s 搭建step by step&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 </description>
         <pubDate>Sun, 01 Aug 2021 17:32:00 +0800</pubDate>
         <link>http://frankwang.cn/post/2021/08/01/k8s-cookbook.html</link>
