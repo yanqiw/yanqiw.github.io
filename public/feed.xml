@@ -5,8 +5,8 @@
     <description></description>
     <link>http://frankwang.cn/</link>
     <atom:link href="http://frankwang.cn/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 07 Aug 2021 12:06:51 +0800</pubDate>
-    <lastBuildDate>Sat, 07 Aug 2021 12:06:51 +0800</lastBuildDate>
+    <pubDate>Sun, 08 Aug 2021 13:30:10 +0800</pubDate>
+    <lastBuildDate>Sun, 08 Aug 2021 13:30:10 +0800</lastBuildDate>
     <generator>Jekyll v3.9.0</generator>
     
       <item>
@@ -14,6 +14,106 @@
         <description>&lt;h1 id=&quot;k8s-自制手册&quot;&gt;k8s 自制手册&lt;/h1&gt;
 &lt;p&gt;记录在阿里云上手动拉起三节点 k8s 的步骤&lt;/p&gt;
 
+&lt;h1 id=&quot;常用命令&quot;&gt;常用命令&lt;/h1&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl get pod &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-system
+kubectl get pod &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; calico-system &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; wide
+kubectl get pod &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; wide
+kubectl get nodes &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; wide
+
+&lt;span class=&quot;c&quot;&gt;#  dashboard&lt;/span&gt;
+kubectl &lt;span class=&quot;nt&quot;&gt;--namespace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;kubernetes-dashboard get pod &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; wide | &lt;span class=&quot;nb&quot;&gt;grep &lt;/span&gt;dashboard
+
+&lt;span class=&quot;c&quot;&gt;# delete node on control-panal&lt;/span&gt;
+kubectl drain &amp;lt;node name&amp;gt; &lt;span class=&quot;nt&quot;&gt;--delete-local-data&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--force&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--ignore-daemonsets&lt;/span&gt;
+
+&lt;span class=&quot;nb&quot;&gt;sudo rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-rf&lt;/span&gt; /etc/kubernetes/
+
+用 pod 运行一个shell
+kubectl run &lt;span class=&quot;nt&quot;&gt;-it&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; busybox &lt;span class=&quot;nt&quot;&gt;--image&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;busybox &lt;span class=&quot;nt&quot;&gt;--&lt;/span&gt; sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;安装-k8s-集群&quot;&gt;安装 k8s 集群&lt;/h1&gt;
+
+&lt;h2 id=&quot;设置阿里云景象&quot;&gt;设置阿里云景象&lt;/h2&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt update &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; apt-transport-https curl
+curl &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt-key add -
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt;/etc/apt/sources.list.d/kubernetes.list
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;安装kube工具&quot;&gt;安装kube工具&lt;/h2&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt-get &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; kubelet kubeadm kubectl
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt-mark hold kubelet kubeadm kubectl
+
+kubeadm config images pull &lt;span class=&quot;nt&quot;&gt;--image-repository&lt;/span&gt; registry.aliyuncs.com/google_containers
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;安装-master&quot;&gt;安装 master&lt;/h2&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;kubeadm init &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--kubernetes-version&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;v1.21.2 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--image-repository&lt;/span&gt; registry.aliyuncs.com/google_containers  &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--pod-network-cidr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;192.168.0.0/16 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--v&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;6
+&lt;span class=&quot;nt&quot;&gt;--ignore-preflight-errors&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;all &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; 因 registry.aliyuncs.com/google_containers 为阿里云三方用户维护，同步慢，有时无法获得对应版本，需要从docker hub 拉取，并重新 tag.
+docker pull coredns/coredns:1.8.0
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;docker tag 296a6d5035e2 registry.aliyuncs.com/google_containers/coredns:v1.8.0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;安装网络插件&quot;&gt;安装网络插件&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Calico 性能好, 但阿里云只能使用 IPIP 模式，与 flannel 模式一致。建议直接使用Flannel 
+一定要先配置网络，再加入节点！！！一定要先配置网络，再加入节点！！！一定要先配置网络，再加入节点！！！
+一定要关闭 NetworkManager ！！！https://docs.projectcalico.org/maintenance/troubleshoot/troubleshooting#configure-networkmanager&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;安装-calico-未成功阿里云上因网络不支持calico-安装失败&quot;&gt;安装 calico [未成功，阿里云上因网络不支持，calico 安装失败]&lt;/h3&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl https://docs.projectcalico.org/manifests/calico.yaml &lt;span class=&quot;nt&quot;&gt;-O&lt;/span&gt;
+kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; calico.yaml
+&lt;span class=&quot;c&quot;&gt;# 如果 pod network 非 192.168.0.0/16 需要先下载 yaml ，手动配置后启动&lt;/span&gt;
+kubectl create &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; https://docs.projectcalico.org/manifests/custom-resources.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;安装-flannel-阿里云可用&quot;&gt;安装 Flannel 【阿里云可用】&lt;/h3&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+&lt;span class=&quot;c&quot;&gt;#如果yml中的&quot;Network&quot;: &quot;10.244.0.0/16&quot;和kubeadm init xxx --pod-network-cidr不一样，就需要修改成一样的。不然可能会使得Node间Cluster IP不通。&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;安装-kube-dashboard&quot;&gt;安装 kube-dashboard&lt;/h3&gt;
+&lt;p&gt;Master 节点运行：&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl proxy 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;从笔记本访问：&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ssh &lt;span class=&quot;nt&quot;&gt;-L&lt;/span&gt; localhost:8001:localhost:8001 &lt;span class=&quot;nt&quot;&gt;-NT&lt;/span&gt; root@xcode-build.frankwang.cn &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; ~/.ssh/xcode-build-env@aliyun
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;获取-token&quot;&gt;获取 Token&lt;/h3&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-system get secret|grep admin-token
+kubectl &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-system describe secret admin-token-vtg87
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;三节点时允许 master 运行 Pod, 有安全风险仅可用于开发，测试环境&lt;/p&gt;
+  &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl taint nodes &lt;span class=&quot;nt&quot;&gt;--all&lt;/span&gt; node-role.kubernetes.io/master-
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
+
+&lt;h1 id=&quot;elk-安装-tips&quot;&gt;ELK 安装 Tips&lt;/h1&gt;
+&lt;ul&gt;
+  &lt;li&gt;需要在每一台机器上安装 nfs-common 工具: apt-get install nfs-common&lt;/li&gt;
+  &lt;li&gt;需要设置每一台机器 sysctl -w vm.max_map_count=262144&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;获取账号--k&quot;&gt;获取账号  k&lt;/h2&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;PASSWORD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;kubectl get secret quickstart-es-elastic-user &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;jsonpath&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'{.data.elastic}'&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;base64&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--decode&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$PASSWORD&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;reference&quot;&gt;Reference&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.cnblogs.com/xiao987334176/p/11317844.html&quot;&gt;K8s 安装&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://segmentfault.com/a/1190000023130407&quot;&gt;Dashboard 安装&lt;/a&gt;
+&lt;a href=&quot;https://www.toutiao.com/c/user/token/MS4wLjABAAAA0YFomuMNm87NNysXeUsQdI0Tt3gOgz8WG_0B3MzxsmI/?is_new_connect=0&amp;amp;is_new_user=0&amp;amp;tab=article&quot;&gt;K8s 搭建step by step&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Sun, 01 Aug 2021 17:32:00 +0800</pubDate>
         <link>http://frankwang.cn/post/2021/08/01/k8s-cookbook.html</link>
