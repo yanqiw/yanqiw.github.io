@@ -30,7 +30,7 @@ spec:
         app: my-blog
     spec:
       containers:
-        - image: registry-vpc.cn-qingdao.aliyuncs.com/yanqiw/yanqiw.github.io
+        - image: ${IMAGE}
           name: my-blog
           resources:
             limits: # 因为我这里是测试环境，所以这里CPU只分配50毫核（0.05核CPU）和20M的内存
