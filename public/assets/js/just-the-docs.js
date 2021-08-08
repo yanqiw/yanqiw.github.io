@@ -53,7 +53,7 @@ function initNav() {
 
 function initSearch() {
   var request = new XMLHttpRequest();
-  request.open('GET', 'http://frankwang.cn/assets/js/search-data.json', true);
+  request.open('GET', 'http://next.yanqiw.qianyitian.com/assets/js/search-data.json', true);
 
   request.onload = function(){
     if (request.status >= 200 && request.status < 400) {
@@ -430,7 +430,7 @@ jtd.getTheme = function() {
 
 jtd.setTheme = function(theme) {
   var cssFile = document.querySelector('[rel="stylesheet"]');
-  cssFile.setAttribute('href', 'http://frankwang.cn/assets/css/just-the-docs-' + theme + '.css');
+  cssFile.setAttribute('href', 'http://next.yanqiw.qianyitian.com/assets/css/just-the-docs-' + theme + '.css');
 }
 
 // Document ready
