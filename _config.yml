@@ -18,7 +18,6 @@ github_username: yanqiw
 markdown: kramdown
 
 #theme
-remote_theme: pmarsceill/just-the-docs
 theme: just-the-docs
 logo: "/assets/images/just-the-docs.png"
 
