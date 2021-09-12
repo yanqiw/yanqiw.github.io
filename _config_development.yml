@@ -10,7 +10,7 @@ title: Francis Wang's blog
 email: wangyanq@gmail.com
 description: > # This is Frank Wang's blog, this blog focus on docker, python.
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://yanqiw.github.io/" # the base hostname & protocol for your site
+url: "http://next.yanqiw.qianyitian.com" # the base hostname & protocol for your site
 twitter_username: yanqiw
 github_username: yanqiw
 
@@ -18,8 +18,7 @@ github_username: yanqiw
 markdown: kramdown
 
 #theme
-# theme: just-the-docs
-remote_theme: pmarsceill/just-the-docs
+theme: just-the-docs
 logo: "/assets/images/just-the-docs.png"
 
 # Aux links for the upper right navigation

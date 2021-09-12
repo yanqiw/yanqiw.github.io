@@ -685,7 +685,7 @@
   },"114": {
     "doc": "k8s 崩溃修复",
     "title": "安装 Ranucher 导致节点内存不足",
-    "content": "崩溃起因为使用 Helm chart 在 K8S 集群上部署 Rancher 。 安装后，初始状态一切正常，可以看到 local 集群，并进行简单管理。20分钟左右，其中一个 node 内存持续飙升， 导致重启。 集群开始调度 pod 到另外一个 node, 导致另外一个 node 内存飙升。出现雪崩效应。 Master 节点 CPU 使用率 100%。整个集群开始不相应任何请求。 . ",
+    "content": "崩溃起因为，使用 Helm chart 在 K8S 集群上部署 Rancher 。 安装后，初始状态一切正常，可以看到 local 集群，并进行简单管理。20分钟左右，其中一个 node 内存持续飙升， 导致重启。 集群开始调度 pod 到另外一个 node, 导致另外一个 node 内存飙升。出现雪崩效应。 Master 节点 CPU 使用率 100%。整个集群开始不相应任何请求。 . ",
     "url": "http://next.yanqiw.qianyitian.com/docs/2021-09-11-k8s-crash.html#%E5%AE%89%E8%A3%85-ranucher-%E5%AF%BC%E8%87%B4%E8%8A%82%E7%82%B9%E5%86%85%E5%AD%98%E4%B8%8D%E8%B6%B3",
     "relUrl": "/docs/2021-09-11-k8s-crash.html#安装-ranucher-导致节点内存不足"
   },"115": {
