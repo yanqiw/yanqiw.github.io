@@ -149,26 +149,6 @@ kubectl -n kube-system describe secret admin-token-vtg87
 kubectl taint nodes --all node-role.kubernetes.io/master-
 ```
 
-## 安装 K9s
-
-> K9s 是一个 terminal 中运行的 k8s 集群管理工具。 如果可以登陆到能连接到 k8s 控制服务的机器，就可以使用 K9s 高效运维 k8s 集群。
-
-1 下载安装包：
-
-```bash
-wget https://github.com/derailed/k9s/releases/download/v0.24.15/k9s_Linux_x86_64.tar.gz
-```
-
-> 最新版本可在 https://github.com/derailed/k9s/releases 查看
-
-2 安装
-
-```bash
-tar -zxf k9s_Linux_x86_64.tar.gz -C /usr/local/bin
-```
-
-
-
 ## 流量入口 ingress-controller
 
 这里使用 aliyun 定制版 ingress-controller。阿里云定制版面向生产级应用，可以做到动态更新 nginx 配置文件。
@@ -210,8 +190,6 @@ kubectl -n ingress-nginx get pod -o wide
 k9s -n ingress-nginx -c pod
 ```
 
-
-
 ## 安装 metrics-server
 
 Metrics-server 提供一组 API 将 pod / node 的运行指标提供给其他服务。例如：k9s
@@ -239,6 +217,47 @@ kubectl apply -f metrics-server-v0.5.0.yaml
 
 
 
+# 运维工具
+
+## 安装 K9s
+
+> K9s 是一个 terminal 中运行的 k8s 集群管理工具。 如果可以登陆到能连接到 k8s 控制服务的机器，就可以使用 K9s 高效运维 k8s 集群。
+>
+> 最新版本可在 https://github.com/derailed/k9s/releases 查看
+
+
+
+```bash
+# 1 下载安装包：
+wget https://github.com/derailed/k9s/releases/download/v0.24.15/k9s_Linux_x86_64.tar.gz
+
+# 2 安装
+tar -zxf k9s_Linux_x86_64.tar.gz -C /usr/local/bin
+
+# 3 启动
+k9s -c pod
+```
+
+## 安装 Helm
+
+[Helm](https://helm.sh/)  是一个类似于k8s的应用管理器，[Helm Charts](https://hub.helm.sh) 上有大量的已经定义好的应用。 同时，开发者也可以借助 Helm 工具管理自定义应用。 
+
+```bash
+# 1 下载安装包：
+wget https://get.helm.sh/helm-v3.7.0-linux-386.tar.gz -O helm.tar.gz
+
+# 2 安装
+tar -zxvf helm-v3.6.2-linux-386.tar.gz
+mv linux-386/helm /usr/local/bin/helm
+
+# 3 安装一个应用 mysql
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update # Make sure we get the latest list of charts
+helm install bitnami/mysql --generate-name
+```
+
+
+
 # ELK 安装 Tips
 
 - 需要在每一台机器上安装 nfs-common 工具: apt-get install nfs-common
@@ -249,8 +268,6 @@ kubectl apply -f metrics-server-v0.5.0.yaml
 PASSWORD=$(kubectl get secret quickstart-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode)
 echo $PASSWORD
 ```
-
-
 
 ## 安装 log-pilot ---> kafka ---> logstash ---> elasticsearch7 ---> kibana7
 
@@ -272,7 +289,7 @@ echo $PASSWORD
 
 > *守护进程方式启动命令加 -daemon 。 例如：bin/zookeeper-server-start.sh -daemon config/zookeeper.properties && bin/kafka-server-start.sh -daemon  config/server.properties
 
-### Kafka 测试：
+#### Kafka 测试：
 
 [参考官网](https://kafka.apache.org/quickstart)
 
@@ -284,7 +301,36 @@ echo $PASSWORD
 
 # Nacos 安装
 
-__*访问地址一定要带路径: /nacos__
+从 Nacos 官网下载最新 k8s 部署文件。 https://nacos.io/zh-cn/docs/use-nacos-with-kubernetes.html
+
+> 配置文件中 nacos-quick-start.yaml 默认部署3个节点。 如果是 3 节点 k8s 集群，则需要修改默认配置，使 nacos 仅部署 2 节点。
+>
+> ⚠️注意：如果少于 2 节点会有无法启动的问题。
+
+修改  ./deploy/nacos/nacos-quick-start.yaml 中副本数量说明：
+
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nacos
+spec:
+  serviceName: nacos-headless
+  replicas: 2 # 修改此数字为 2
+  template:
+  ...
+          env:
+            - name: NACOS_REPLICAS
+              value: "2" # 修改此数字为 2
+          ...
+            - name: NACOS_SERVERS
+              value: "nacos-0.nacos-headless.default.svc.cluster.local:8848 nacos-1.nacos-headless.default.svc.cluster.local:8848" # 移除 nacos-2.nacos-headless.default.svc.cluster.local:8848
+ 
+```
+
+### 验证部署结果
+
+__⚠️注意：访问地址一定要带路径: /nacos__
 
 ```bash
 # In VM
@@ -300,7 +346,10 @@ curl -X POST "http://nacos-headless:8848/nacos/v1/cs/configs?dataId=nacos.cfg.da
 curl -X GET "http://nacos-headless:8848/nacos/v1/cs/configs?dataId=nacos.cfg.dataId&group=test"
 ```
 
+
+
 # 安装 MySQL Admin
+
 ```bash
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install mysql-admin bitnami/phpmyadmin
@@ -308,7 +357,7 @@ helm install mysql-admin bitnami/phpmyadmin
 
 
 
-# Reference
+# 参考文章
 
 - [K8s 安装](https://www.cnblogs.com/xiao987334176/p/11317844.html)
 - [Dashboard 安装](https://segmentfault.com/a/1190000023130407)
