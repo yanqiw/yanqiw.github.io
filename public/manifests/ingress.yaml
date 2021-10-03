@@ -11,3 +11,10 @@ spec:
               serviceName: my-blog
               servicePort: 80
             path: /
+    - host: yanqiw-next.qianyitian.com
+      http:
+        paths:
+          - backend:
+              serviceName: my-blog
+              servicePort: 80
+            path: /
