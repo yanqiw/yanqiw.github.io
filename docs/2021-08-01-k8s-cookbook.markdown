@@ -32,7 +32,45 @@ kubectl run -it --rm busybox --image=busybox -- sh
 
 # 安装 k8s 集群 
 
+> 安装过程中涉及到的 yaml 会因为网络原因无法下载。 我已将本文涉及到的 yaml 文件统一放入 github 仓库。如遇到网络问题，可通过 clone 仓库到 node 进行相关部署。 仓库地址：https://github.com/yanqiw/k8s-study-yaml 。 
+
+## 关闭 Node 的 SWAP
+
+需要关闭 SWAP ，否则 kubelet 在启动时会报错。 
+
+在所有 node 上运行：
+
+```bash
+swapoff -a
+```
+
+运行后通过 `free -h` 查看结果，可以看到 swap 被关闭。
+
+## 设置 cgroup 驱动
+
+Kubeadmin 默认使用  systemd 驱动，但docker 使用 cgroupfs 驱动。 这会导致 kubelet 启动报错。 
+
+在所有节点上执行一下步骤：
+
+> 修改 docker 到 systemd （*K8s 官网推荐）
+
+1 创建`/etc/docker/daemon.json`文件，并放入以下内容：
+
+```json
+{
+  "exec-opts": ["native.cgroupdriver=systemd"]
+}
+```
+
+2 重启 docker
+
+```bash
+systemctl daemon-reload
+systemctl restart docker
+```
+
 ## 设置阿里云景象
+
 ```bash
 sudo apt update && sudo apt install -y apt-transport-https curl
 curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -53,7 +91,7 @@ sudo kubeadm init \
 --kubernetes-version=v1.21.2 \
 --image-repository registry.aliyuncs.com/google_containers  \
 --pod-network-cidr=192.168.0.0/16 \
---v=6
+--v=6 \
 --ignore-preflight-errors=all \
 > 因 registry.aliyuncs.com/google_containers 为阿里云三方用户维护，同步慢，有时无法获得对应版本，需要从docker hub 拉取，并重新 tag.
 docker pull coredns/coredns:1.8.0
@@ -80,8 +118,17 @@ wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-
 #如果yml中的"Network": "10.244.0.0/16"和kubeadm init xxx --pod-network-cidr不一样，就需要修改成一样的。不然可能会使得Node间Cluster IP不通。
 ```
 
-## 安装 kube-dashboard
+## 安装 kube-dashboard 
+> 只有基本集群管理功能，仅能作为学习使用，快速了解 k8s 基本概念。 真正线上运维建议使用 Rancher 或 k9s 等产品。
+
+根据官网说明安装：
+
+```bas
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.2.0/aio/deploy/recommended.yaml
+```
+
 Master 节点运行：
+
 ```bash
 kubectl proxy 
 ```
@@ -100,6 +147,94 @@ kubectl -n kube-system describe secret admin-token-vtg87
 > 三节点时允许 master 运行 Pod, 有安全风险仅可用于开发，测试环境
 ```bash
 kubectl taint nodes --all node-role.kubernetes.io/master-
+```
+
+## 安装 K9s
+
+> K9s 是一个 terminal 中运行的 k8s 集群管理工具。 如果可以登陆到能连接到 k8s 控制服务的机器，就可以使用 K9s 高效运维 k8s 集群。
+
+1 下载安装包：
+
+```bash
+wget https://github.com/derailed/k9s/releases/download/v0.24.15/k9s_Linux_x86_64.tar.gz
+```
+
+> 最新版本可在 https://github.com/derailed/k9s/releases 查看
+
+2 安装
+
+```bash
+tar -zxf k9s_Linux_x86_64.tar.gz -C /usr/local/bin
+```
+
+
+
+## 流量入口 ingress-controller
+
+这里使用 aliyun 定制版 ingress-controller。阿里云定制版面向生产级应用，可以做到动态更新 nginx 配置文件。
+
+> 版本公告：https://developer.aliyun.com/article/598075
+>
+> 动态更新原理：https://developer.aliyun.com/article/692732
+
+### 设置允许部署 ingress-controller 的 Node
+
+向可以部署的 Node 添加标签。 这里使用 `ingress-controller-ready=true` 来标记。
+
+```bash
+# 列出所有node
+kubectl get nodes --show-labels
+
+# 找到允许部署 ingress-controller 的节点 Name。 执行以下命令：
+kubectl label nodes <your-node-name> ingress-controller-ready=true
+# 例如：kubectl label nodes node-01 ingress-controller-ready=true
+```
+
+### 部署 ingress-controller
+
+```bash
+# 如果已经 clone 过代码仓库，可以跳过下载，直接在本地仓库内找到 aliyun-ingress-nginx.yaml 文件
+wget https://raw.githubusercontent.com/yanqiw/k8s-study-yaml/main/aliyun-ingress-nginx.yaml
+
+# 部署
+kubectl apply -f aliyun-ingress-nginx.yaml
+```
+
+### 检查部署状态
+
+```bash
+# 命令行
+kubectl -n ingress-nginx get pod -o wide
+
+# k9s
+k9s -n ingress-nginx -c pod
+```
+
+
+
+## 安装 metrics-server
+
+Metrics-server 提供一组 API 将 pod / node 的运行指标提供给其他服务。例如：k9s
+
+> 最新版本：https://github.com/kubernetes-sigs/metrics-server/releases
+
+```bash
+# 如果已经 clone 过代码仓库，可以跳过下载，直接在本地仓库内找到 metrics-server-v0.5.0.yaml 文件
+wget https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.5.0/components.yaml -O metrics-server-v0.5.0.yaml
+
+# 如果 k8s 使用自签名证书，需要修改 container 启动参数。在 containers.args 中添加 - --kubelet-insecure-tls 。
+# 例如：
+# containers:
+#       - args:
+#         - --cert-dir=/tmp
+#         - --secure-port=443
+#         - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+#         - --kubelet-use-node-status-port
+#         - --metric-resolution=15s
+#         - --kubelet-insecure-tls
+
+# 部署
+kubectl apply -f metrics-server-v0.5.0.yaml
 ```
 
 
