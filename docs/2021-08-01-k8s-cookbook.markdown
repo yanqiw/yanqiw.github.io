@@ -345,6 +345,69 @@ exportfs -s
 
 > *守护进程方式启动命令加 -daemon 。 例如：bin/zookeeper-server-start.sh -daemon config/zookeeper.properties && bin/kafka-server-start.sh -daemon  config/server.properties
 
+#### 链接独立安装 Kafka
+
+独立安装的 kafka 需要通过域名解析，如果没有域名会默认使用 hostname, 这会导致节点外客户端无法正确访问 kafka 服务。
+
+节点上配置 /etc/hosts 文件，配置 kafka 服务 IP 和节点 hostname。 例如：
+
+```properties
+172.21.0.4 kafka-node kafka-node
+```
+
+在  K8s 上配置一个 service。 例如：
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+    name: kafka-node # kafka 服务节点 hostname
+spec:
+    ports:
+        - protocol: TCP
+          port: 9092
+          targetPort: 9092
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+    name: kafka-node # kafka 服务节点 hostname
+subsets:
+    - addresses:
+        - ip: 172.21.0.3 # kafka 服务节点 IP
+      ports:
+        - port: 9092
+```
+
+另外一种解法，直接配置 Pod 的 hostAliases 。 这种方法仅对需要访问 kafka 的 Pod 进行解析，颗粒度更小，但需要修改每个需要访问的 Pod 的 YAML 文件，操作繁琐，收益不大。 例如：
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: logstash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      hostAliases: # 配置 Pod 的 host 解析
+      - ip: "172.21.0.3" # kafka 服务节点 IP
+        hostnames:
+        - "kafka-node" # kafka 服务节点 hostname
+      containers:
+      - name: logstash
+        image: elastic/logstash:7.10.1
+        ports:
+        - containerPort: 5044
+```
+
 #### Kafka 测试：
 
 [参考官网](https://kafka.apache.org/quickstart)
