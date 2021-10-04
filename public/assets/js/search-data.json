@@ -685,64 +685,70 @@
   },"114": {
     "doc": "k8s 自制手册",
     "title": "ELK 安装 Tips",
-    "content": ". | 需要在每一台机器上安装 nfs-common 工具: apt-get install nfs-common | 需要设置每一台机器 sysctl -w vm.max_map_count=262144 | . ",
+    "content": " ",
     "url": "/docs/2021-08-01-k8s-cookbook.html#elk-%E5%AE%89%E8%A3%85-tips",
     "relUrl": "/docs/2021-08-01-k8s-cookbook.html#elk-安装-tips"
   },"115": {
+    "doc": "k8s 自制手册",
+    "title": "安装 nfs 服务和客户端",
+    "content": "在一个节点上安装 nfs 服务端，并在所有需要部署 elasticesearch 节点上安装 nfs 客户端 . ubuntu 安装 . 需要每个节点执行 . sudo apt install nfs-common nfs4-acl-tools . CentOS 安装 . 需要每个节点执行 . dnf install nfs-utils nfs4-acl-tools . 根据 elasticesearch 要求，设置 vm.max_map_count . 需要设置每个节点 . sysctl -w vm.max_map_count=262144 . nfs 服务节点上开启服务 . 启动 nfs 服务 . systemctl start nfs-server.service systemctl enable nfs-server.service systemctl status nfs-server.service . 创建共享文件夹 . mkdir -p /nfsroot/elastic-search/master mkdir -p /nfsroot/elastic-search/data # 修改文件夹用户和用户组，使容器可以访问 chown -R 1000:1000 /nfsroot . 共享文件夹 . 在 /etc/exports 中添加 . /nfsroot/elastic-search/master 172.21.0.0/24(rw,sync) /nfsroot/elastic-search/data 172.21.0.0/24(rw,sync) . 更新 nfs 配置 . exportfs -arv exportfs -s . ",
+    "url": "/docs/2021-08-01-k8s-cookbook.html#%E5%AE%89%E8%A3%85-nfs-%E6%9C%8D%E5%8A%A1%E5%92%8C%E5%AE%A2%E6%88%B7%E7%AB%AF",
+    "relUrl": "/docs/2021-08-01-k8s-cookbook.html#安装-nfs-服务和客户端"
+  },"116": {
+    "doc": "k8s 自制手册",
+    "title": "安装 log-pilot —&gt; kafka —&gt; logstash —&gt; elasticsearch7 —&gt; kibana7",
+    "content": "在实际生产环境中，我们的业务日志可能会非常多，这时候建议收集时直接先缓存到KAFKA，然后根据后面我们的实际需求来消费KAFKA里面的日志数据，转存到其他地方，这里接上面继续，我以一个logstash来收集KAFKA里面的日志数据到最新版本的elasticsearch里面（正好也解决了log-pilot不支持elasticsearch7以上版本的问题） . ELK 安装参考 . 安装参考 . 安装 Kafka . 出于稳定性考虑，建议在 k8s 之外独立安装。 . docker-compose 安装： . | 下载： https://github.com/wurstmeister/kafka-docker | docker-compose up -d | . 裸机独立安装 Kafka . | 下载：https://kafka.apache.org/downloads | 安装 https://kafka.apache.org/documentation/#quickstart | . *守护进程方式启动命令加 -daemon 。 例如：bin/zookeeper-server-start.sh -daemon config/zookeeper.properties &amp;&amp; bin/kafka-server-start.sh -daemon config/server.properties . Kafka 测试： . 参考官网 . Logstash 配置不校验证书: . ssl =&gt; true # 需要同时设置 ssl_certificate_verification =&gt; false . ",
+    "url": "/docs/2021-08-01-k8s-cookbook.html#%E5%AE%89%E8%A3%85-log-pilot--kafka--logstash--elasticsearch7--kibana7",
+    "relUrl": "/docs/2021-08-01-k8s-cookbook.html#安装-log-pilot--kafka--logstash--elasticsearch7--kibana7"
+  },"117": {
     "doc": "k8s 自制手册",
     "title": "获取账号",
     "content": "PASSWORD=$(kubectl get secret quickstart-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode) echo $PASSWORD . ",
     "url": "/docs/2021-08-01-k8s-cookbook.html#%E8%8E%B7%E5%8F%96%E8%B4%A6%E5%8F%B7",
     "relUrl": "/docs/2021-08-01-k8s-cookbook.html#获取账号"
-  },"116": {
-    "doc": "k8s 自制手册",
-    "title": "安装 log-pilot —&gt; kafka —&gt; logstash —&gt; elasticsearch7 —&gt; kibana7",
-    "content": "在实际生产环境中，我们的业务日志可能会非常多，这时候建议收集时直接先缓存到KAFKA，然后根据后面我们的实际需求来消费KAFKA里面的日志数据，转存到其他地方，这里接上面继续，我以一个logstash来收集KAFKA里面的日志数据到最新版本的elasticsearch里面（正好也解决了log-pilot不支持elasticsearch7以上版本的问题） . 安装参考 . 安装 Kafka . 建议在 k8s 之外通过 docker- compose 安装 . docker-compose 安装： . | 下载： https://github.com/wurstmeister/kafka-docker | docker-compose up -d | . 裸机安装 Kafka . | 下载：https://kafka.apache.org/downloads | 安装 https://kafka.apache.org/documentation/#quickstart | . *守护进程方式启动命令加 -daemon 。 例如：bin/zookeeper-server-start.sh -daemon config/zookeeper.properties &amp;&amp; bin/kafka-server-start.sh -daemon config/server.properties . Kafka 测试： . 参考官网 . Logstash 配置不校验证书: . ssl =&gt; true # 需要同时设置 ssl_certificate_verification =&gt; false . ",
-    "url": "/docs/2021-08-01-k8s-cookbook.html#%E5%AE%89%E8%A3%85-log-pilot--kafka--logstash--elasticsearch7--kibana7",
-    "relUrl": "/docs/2021-08-01-k8s-cookbook.html#安装-log-pilot--kafka--logstash--elasticsearch7--kibana7"
-  },"117": {
+  },"118": {
     "doc": "k8s 自制手册",
     "title": "Nacos 安装",
     "content": "从 Nacos 官网下载最新 k8s 部署文件。 https://nacos.io/zh-cn/docs/use-nacos-with-kubernetes.html . 配置文件中 nacos-quick-start.yaml 默认部署3个节点。 如果是 3 节点 k8s 集群，则需要修改默认配置，使 nacos 仅部署 2 节点。 . ⚠️注意：如果少于 2 节点会有无法启动的问题。 . 修改 ./deploy/nacos/nacos-quick-start.yaml 中副本数量说明： . apiVersion: apps/v1 kind: StatefulSet metadata: name: nacos spec: serviceName: nacos-headless replicas: 2 # 修改此数字为 2 template: ... env: - name: NACOS_REPLICAS value: \"2\" # 修改此数字为 2 ... - name: NACOS_SERVERS value: \"nacos-0.nacos-headless.default.svc.cluster.local:8848 nacos-1.nacos-headless.default.svc.cluster.local:8848\" # 移除 nacos-2.nacos-headless.default.svc.cluster.local:8848 . 验证部署结果 . ⚠️注意：访问地址一定要带路径: /nacos . # In VM curl -X PUT 'http://192.168.2.29:8848/nacos/v1/ns/instance?serviceName=nacos.naming.serviceName&amp;ip=20.18.7.10&amp;port=8080' curl -X GET 'http://192.168.2.29:8848/nacos/v1/ns/instance/list?serviceName=nacos.naming.serviceName' curl -X POST \"http://192.168.2.29:8848/nacos/v1/cs/configs?dataId=nacos.cfg.dataId&amp;group=test&amp;content=helloWorld\" curl -X GET \"http://192.168.2.29:8848/nacos/v1/cs/configs?dataId=nacos.cfg.dataId&amp;group=test\" ## In Pod curl -X PUT 'http://nacos-headless:8848/nacos/v1/ns/instance?serviceName=nacos.naming.serviceName&amp;ip=20.18.7.10&amp;port=8080' curl -X GET 'http://nacos-headless:8848/nacos/v1/ns/instance/list?serviceName=nacos.naming.serviceName' curl -X POST \"http://nacos-headless:8848/nacos/v1/cs/configs?dataId=nacos.cfg.dataId&amp;group=test&amp;content=helloWorld\" curl -X GET \"http://nacos-headless:8848/nacos/v1/cs/configs?dataId=nacos.cfg.dataId&amp;group=test\" . ",
     "url": "/docs/2021-08-01-k8s-cookbook.html#nacos-%E5%AE%89%E8%A3%85",
     "relUrl": "/docs/2021-08-01-k8s-cookbook.html#nacos-安装"
-  },"118": {
+  },"119": {
     "doc": "k8s 自制手册",
     "title": "安装 MySQL Admin",
     "content": "helm repo add bitnami https://charts.bitnami.com/bitnami helm install mysql-admin bitnami/phpmyadmin . ",
     "url": "/docs/2021-08-01-k8s-cookbook.html#%E5%AE%89%E8%A3%85-mysql-admin",
     "relUrl": "/docs/2021-08-01-k8s-cookbook.html#安装-mysql-admin"
-  },"119": {
+  },"120": {
     "doc": "k8s 自制手册",
     "title": "参考文章",
     "content": ". | K8s 安装 | Dashboard 安装 | K8s 搭建step by step | k8s 基础组建相关部署 YAML | . ",
     "url": "/docs/2021-08-01-k8s-cookbook.html#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0",
     "relUrl": "/docs/2021-08-01-k8s-cookbook.html#参考文章"
-  },"120": {
+  },"121": {
     "doc": "k8s 崩溃修复",
     "title": "K8S 崩溃排查",
     "content": "记录一次 K8S 意外崩溃，修复思路，和复盘。 . 集群规格： . | 节点名 | 规格 | 说明 | . | Master-01 | 2 CPU, 4 GB | 控制节点（开启允许部署应用） | . | Node-01 | 4 CUP, 8 GB | 运行节点 | . | Node-02 | 4 CPU, 8 GB | 运行节点 | . ",
     "url": "/docs/2021-09-11-k8s-crash.html#k8s-%E5%B4%A9%E6%BA%83%E6%8E%92%E6%9F%A5",
     "relUrl": "/docs/2021-09-11-k8s-crash.html#k8s-崩溃排查"
-  },"121": {
+  },"122": {
     "doc": "k8s 崩溃修复",
     "title": "安装 Ranucher 导致节点内存不足",
     "content": "崩溃起因为，使用 Helm chart 在 K8S 集群上部署 Rancher 。 安装后，初始状态一切正常，可以看到 local 集群，并进行简单管理。20分钟左右，其中一个 node 内存持续飙升， 导致重启。 集群开始调度 pod 到另外一个 node, 导致另外一个 node 内存飙升。出现雪崩效应。 Master 节点 CPU 使用率 100%。整个集群开始不响应任何请求。 . ",
     "url": "/docs/2021-09-11-k8s-crash.html#%E5%AE%89%E8%A3%85-ranucher-%E5%AF%BC%E8%87%B4%E8%8A%82%E7%82%B9%E5%86%85%E5%AD%98%E4%B8%8D%E8%B6%B3",
     "relUrl": "/docs/2021-09-11-k8s-crash.html#安装-ranucher-导致节点内存不足"
-  },"122": {
+  },"123": {
     "doc": "k8s 崩溃修复",
     "title": "修复思路",
     "content": "因集群上Pod大部分处在内存不足，停止，重启的过程。 无法使用 kubeadmin dashboard 通过 Web 管理集群。仅能通过控制节点上的 kubectl 来链接 K8S，效率低下。所以，先找到一个高效管理的工具， 对集群进行观测。再通过观测结果，做出相应修复方案，并执行。 . 高效的 K8S 终端管理工具 - K9S . K9S 是一套运行在命令行内的管理工具，使用习惯于 VIM 类似。通过K9S可以快速查看集群状况，在终端环境下可以高效运维集群。 . 观测问题 . 在安装 K9S 之后， 通过观测发现 Helm chart 安装的 Rancher，带有全部特性包括多集群管理的 Fleet 特性。因为这些重量级的特性，导致集群内 Node 节点内存始终会被占满，导致重启。 发现了问题，也有了大致的解决问题的方向 —— 将 Rancher 从集群内清除!!! . 修复方案 . 因为本身集群是用来做实验的测试集群，所以并不要求持续可用。 经过与同事讨论，方案有三个。 . 方案一：重置三台虚拟机，使用 RKE 重新拉起 . 方案简单粗暴。对于临时测试集群来说算是一种一了百了的高效方案。 . 优势：使用 RKE 可以快速拉起一套 K8S 集群，不需要太多多人工干预。同时，可以再体验一下 RKE 管理的K8S。 . 劣势：之前群上的一些应用需要重新安装。例如：ELK 全家桶，Nacos 等等。。。 . 方案二：从服务器上产掉K8S，通过 Kubeadmin 手动拉起 . 方案挑战较多。首先，要清理K8S 的残留文件。其次，手动拉起虽然有脚本支持，但也避免不了一些意外情况。 . 优势：可以演练一下产掉 K8S，重新定制化手动拉起的过程。 . 劣势：周期较长，有因为未清理干净，从而导致再次安装出现意外情况的可能。 . 方案三：手动清理 Rancher Stack . 方案对现有集群影响最小。 . 优势：影响最小，可以通过逐个删除 Rancher Stack 的 Namespace 来完成资源删除。可以演练生产环境时，不能删除集群的情况。 . 劣势：有一些挂掉的 K8S 服务需要重新启动，并关联。 . 选择方案，并修复 . 既然是测试集群，本着折腾的原则。决定先采用__方案三__演练一下生产环境不能删除集群时的灾难恢复。 . 删除 Rancher Stack . 删除过程使用 K9S 非常简单高效。通过，namespece 视图选取相应的 namespace 使用 ctrl+d 快捷键即可启动删除操作。 . 等待 K8S 自愈 . 因为控制节点仅仅是 CPU 拉满，当 Rancher Stack 被逐渐删除后，控制节点开始恢复运转。 期间，Node-01 因始终无法接到清理指令，一直无法恢复，只能通过阿里云控制台强行重启。 . 最终，所有节点恢复运转，控制节点开始重新调度上层应用。 . 手动恢复操作 . 集群开始运行后，出现了以下问题几个问题。 . Nacos 无法创建 endpoint . 错误信息： the object has been modified; please apply your changes to the latest version and try again . 经过排查得到官网说明：由于 etcd restore 之后，在重启 kube-apiserver 之前，控制平面各个组件缓存中的 Object 版本跟 etcd 备份中不一致。解决方法是是在 etcd restore 之后，重启控制平面所有组件。 . 通过 k9s 手动重启了所有 kube-system 下的 pod。⚠️注意：要从 pod 视图逐一删除pod。 . Nacos 数据丢失 . Nacos 重新启动后，之前的数据丢失，手动将本地保存的 Config 和 Namespace 恢复。 这个原因带排查，初步猜测原因是 Node 挂掉后，mysql Pod 被调度到另外一个节点，并重新初始化了数据库。或是，在恢复 Nacos 过程中失误删掉了数据库。 . 手动拉起 Kafka . 集群正常启动后，发现日志没有进去 elasticsearch。 因为，之前 Kafka 是部署在 K8S 集群之外的 Node-01 上。所以，需要手动在 Node-01 上通过 docker-compose 启动。 . 一切恢复 . 经过一番折腾，在没有删除集群的情况下，将服务逐一恢复。历时 6 个小时，如果是真正的线上问题，已经可以定级为__严重故障__。 . 所以，需要复盘一下。 . ",
     "url": "/docs/2021-09-11-k8s-crash.html#%E4%BF%AE%E5%A4%8D%E6%80%9D%E8%B7%AF",
     "relUrl": "/docs/2021-09-11-k8s-crash.html#修复思路"
-  },"123": {
+  },"124": {
     "doc": "k8s 崩溃修复",
     "title": "复盘",
     "content": "关键问题点 . | 在使用 Helm 安装 Rancher 之前，虽然检查过 Pre-requirement，但是对于要求的服务器规格理解不到位。导致没有准确评估出现有集群规格无法满足部署条件。 | 集群再部署前内存水位线已接近临界值，但并没有被注意到。 | 集群挂掉之前，并没有灾备预案。导致恢复过程属于“摸石头过河”。 | 运维自动化程度不够，无论是重新拉起，还是恢复上层应用都需要手动操作。 | . 经验教训 . | 部署前一定要详细了解 Pre-requirement，做好风险分析 | 生产级集群在部署新应用前，要做容量估算和检查，预留好充足资源 | 生产级集群需要有灾备预案，并定期进行演练，以提高运维团队应对突发状况的能力 | 添加自动化运维能力，例如: Ansible, Terraform | . ",
     "url": "/docs/2021-09-11-k8s-crash.html#%E5%A4%8D%E7%9B%98",
     "relUrl": "/docs/2021-09-11-k8s-crash.html#复盘"
-  },"124": {
+  },"125": {
     "doc": "k8s 崩溃修复",
     "title": "k8s 崩溃修复",
     "content": " ",

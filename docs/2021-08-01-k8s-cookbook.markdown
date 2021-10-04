@@ -260,30 +260,86 @@ helm install bitnami/mysql --generate-name
 
 # ELK 安装 Tips
 
-- 需要在每一台机器上安装 nfs-common 工具: apt-get install nfs-common
-- 需要设置每一台机器 sysctl -w vm.max_map_count=262144 
+## 安装 nfs 服务和客户端
 
-## 获取账号
+在一个节点上安装 nfs 服务端，并在所有需要部署 elasticesearch 节点上安装 nfs 客户端
+
+### ubuntu 安装
+
+需要每个节点执行 
+
 ```bash
-PASSWORD=$(kubectl get secret quickstart-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode)
-echo $PASSWORD
+sudo apt install nfs-common nfs4-acl-tools 
+```
+
+### CentOS 安装
+
+需要每个节点执行
+
+```
+ dnf install nfs-utils nfs4-acl-tools 
+```
+
+### 根据 elasticesearch 要求，设置 vm.max_map_count
+
+需要设置每个节点 
+
+```bash
+sysctl -w vm.max_map_count=262144 
+```
+
+### nfs 服务节点上开启服务
+
+#### 启动 nfs 服务
+
+```bash
+systemctl start nfs-server.service
+systemctl enable nfs-server.service
+systemctl status nfs-server.service
+```
+
+####  创建共享文件夹
+
+```bash
+mkdir -p /nfsroot/elastic-search/master
+mkdir -p /nfsroot/elastic-search/data
+# 修改文件夹用户和用户组，使容器可以访问
+chown -R 1000:1000 /nfsroot
+```
+
+#### 共享文件夹
+
+在 /etc/exports 中添加
+
+```properties
+/nfsroot/elastic-search/master 172.21.0.0/24(rw,sync)
+/nfsroot/elastic-search/data 172.21.0.0/24(rw,sync)
+```
+
+更新 nfs 配置
+
+```bash
+exportfs -arv
+exportfs -s
 ```
 
 ## 安装 log-pilot ---> kafka ---> logstash ---> elasticsearch7 ---> kibana7
 
 在实际生产环境中，我们的业务日志可能会非常多，这时候建议收集时直接先缓存到KAFKA，然后根据后面我们的实际需求来消费KAFKA里面的日志数据，转存到其他地方，这里接上面继续，我以一个logstash来收集KAFKA里面的日志数据到最新版本的elasticsearch里面（正好也解决了log-pilot不支持elasticsearch7以上版本的问题）
 
+### ELK 安装参考
+
 [安装参考](https://www.toutiao.com/a6943207675199144459/)
 
 ### 安装 Kafka
 
-建议在 k8s 之外通过 docker- compose 安装
+出于稳定性考虑，建议在 k8s 之外独立安装。
 
 #### docker-compose 安装：
 - 下载： https://github.com/wurstmeister/kafka-docker
 - docker-compose up -d 
 
-#### 裸机安装 Kafka 
+#### 裸机独立安装 Kafka 
 - 下载：https://kafka.apache.org/downloads
 - 安装 https://kafka.apache.org/documentation/#quickstart 
 
@@ -296,6 +352,13 @@ echo $PASSWORD
 ### Logstash 配置不校验证书:
 > ssl => true  # 需要同时设置
 > ssl_certificate_verification => false
+
+## 获取账号
+
+```bash
+PASSWORD=$(kubectl get secret quickstart-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode)
+echo $PASSWORD
+```
 
 
 
