@@ -256,6 +256,10 @@ helm repo update # Make sure we get the latest list of charts
 helm install bitnami/mysql --generate-name
 ```
 
+### Helm 是用的几个 Tips
+- 删除 chart 时 PVC 不会删除，需要手动删除。 *可能是 bug
+- 使用别人的 chart 时，对于参数要仔细了解。 必要时需要查看 hub 上的 template 排查逻辑。
+- 尽量不要修还默认部署方式。一旦修改，需要严格参考 values 说明，同时检查 template 逻辑。 并在部署后，在 k8s 上查看部署的 yaml 文件，是否与预期一致。
 
 
 # ELK 安装 Tips
@@ -481,6 +485,24 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install mysql-admin bitnami/phpmyadmin
 ```
 
+# 安装 Redis
+使用 helm 安装 bitnami/redis 有两种方式。 第一种：创建 storageClass 第二种：手动创建 PV/PVC 。 第一种，需要在 k8s 上创建一个公共的 storageClass 动态给PVC消费。 因为之前并没有创建过公用 storageClass, 所以这里是用第二种方式。 
+
+第二种方式需要预先创建 PV 和 PVC。 创建好后，需要创建一个 helm 是用的的 values.yaml 文件，用来设置 bitnami/redis 的启动参数。 
+values.yaml 如下：
+```yaml
+master:
+  podSecurityContext:
+    fsGroup: 1000 # NFS 文件夹的组
+  containerSecurityContext:
+    runAsUser: 1000 # NFS 文件夹的用户ID
+  persistence:
+    existingClaim: redis-master-pvc # 预先创建的 PVC 名字
+    enabled: true
+replica:
+  persistence:
+    enabled: false # 关闭 slave 节点的持久化。 因为 slave 节点会有多个，所以这里不能指定具体的 PVC。 如果需要，请使用 storageClass 模式部署，会动态创建。 
+```
 
 
 # 参考文章
