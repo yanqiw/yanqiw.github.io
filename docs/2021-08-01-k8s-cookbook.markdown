@@ -476,6 +476,12 @@ curl -X POST "http://nacos-headless:8848/nacos/v1/cs/configs?dataId=nacos.cfg.da
 curl -X GET "http://nacos-headless:8848/nacos/v1/cs/configs?dataId=nacos.cfg.dataId&group=test"
 ```
 
+本地开发时，您可以从 [最新稳定版本](https://github.com/alibaba/nacos/releases) 下载 nacos-server-$version.zip 包，直接通过 nacos 提供的脚本启动。 下载好后执行：
+```bash
+tar -xvf nacos-server-$version.tar.gz
+cd nacos/bin
+sh startup.sh -m standalone`
+```
 
 
 # 安装 MySQL Admin
