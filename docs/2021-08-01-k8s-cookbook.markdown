@@ -480,7 +480,7 @@ curl -X GET "http://nacos-headless:8848/nacos/v1/cs/configs?dataId=nacos.cfg.dat
 ```bash
 tar -xvf nacos-server-$version.tar.gz
 cd nacos/bin
-sh startup.sh -m standalone`
+sh startup.sh -m standalone
 ```
 
 
