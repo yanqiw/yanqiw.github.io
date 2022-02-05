@@ -510,6 +510,23 @@ replica:
     enabled: false # 关闭 slave 节点的持久化。 因为 slave 节点会有多个，所以这里不能指定具体的 PVC。 如果需要，请使用 storageClass 模式部署，会动态创建。 
 ```
 
+# Tips
+## K8s 1.20.x 之后无法动态创建 PV 解决办法
+根因为 1.20.x 之后，API Server 的 RemoveSelfLink 属性默认变成`true`后，导致 nfs-prevision 容器无法接收到 selflink 参数，无法创建相应目录。重新开启 RemoveSelfLink，需要修改 Master 节点上的 kube-apiserver.yaml 并保存。 
+
+编辑 kube-apiserver.yaml
+```bash
+vim /etc/kubernetes/manifests/kube-apiserver.yaml
+```
+修改如下：
+```yaml
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    - --feature-gates=RemoveSelfLink=false # 加入这句指令
+```
+修改后保存推出，kubelet 会自动从起 apiserver 无需手动操作。
 
 # 参考文章
 
