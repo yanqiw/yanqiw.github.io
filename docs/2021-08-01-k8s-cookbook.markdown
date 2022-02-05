@@ -526,7 +526,7 @@ spec:
     - kube-apiserver
     - --feature-gates=RemoveSelfLink=false # 加入这句指令
 ```
-修改后保存推出，kubelet 会自动从起 apiserver 无需手动操作。
+修改后保存退出，kubelet 会自动从起 apiserver 无需手动操作。
 
 # 参考文章
 
