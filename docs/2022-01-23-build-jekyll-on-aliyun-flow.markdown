@@ -57,6 +57,9 @@ COPY ./public /usr/share/nginx/html
 
 配置“镜像构建并推送阿里云”的“Dockfile”路径为`DockerFile`。 其他配置可根据个人在阿里云的容器镜像服务配置。这个服务的个人版本也免费配额足够个人使用。
 
+#  Webhook
+云效提供 webhook 功能，可以支持从代码库触发构建。 将 Webhook 地址填入对应的  git 服务  webhook  回调地址即可触发。 如果 git 服务回调默认会传入一些  payload,  需要在 flow 的 “变量和缓存”配置中，配置一个 payload  一直包含的变量，否则将无法触发流水线。 以 gitee 为例， gitee  的 webhook  回调默认会携带  payload。payload 中一直会存在“timestamp”变量。为了 Flow 可以准确出发，需要在对应的流水线上的“变量和缓存”中添加一个“timestamp”变量，并设置默认值（默认值可以随意设置，例如：0）。 设置后， gitee  回调即可触发流水线构建。
+
 # 发布 k8s 集群
 
 点击 “kubernetes 发布” 进行集群发布配置。这里可以参考官方文档操作，不做更多说明。
