@@ -2,7 +2,7 @@
 layout: post
 title:  "Redux Saga实践"
 date:   2017-03-05 09:03:51
-parent: "React Native入门总结"
+parent: "React Native 相关内容"
 nav_order: 20
 ---
 

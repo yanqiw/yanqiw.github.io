@@ -2,8 +2,8 @@
 layout: "post"
 title: "React Native入门总结"
 date: "2016-05-12 15:03:57"
-has_children: true
-nav_order: 99
+parent: "React Native 相关内容"
+nav_order: 0
 ---
 
 React Native入门总结

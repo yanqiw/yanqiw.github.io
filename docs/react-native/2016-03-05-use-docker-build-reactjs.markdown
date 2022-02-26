@@ -2,7 +2,7 @@
 layout: post
 title:  "使用docker创建ReactJS开发环境，实时编译JSX"
 date:   2016-03-05 08:33:00 +0800
-parent: "React Native入门总结"
+parent: "React Native 相关内容"
 nav_order: 10
 ---
 ## 为什么要使用docker来创建ReactJS开发环境
