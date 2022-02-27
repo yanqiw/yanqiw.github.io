@@ -2,6 +2,7 @@
 layout: post
 title:  "使用“阿里云-云效”构建 jekyll 博客"
 date:   "20210123_184000"
+parent: "云原生和微服务架构"
 nav_order: 20
 ---
 

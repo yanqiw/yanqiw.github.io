@@ -2,6 +2,7 @@
 layout: post
 title:  "在docker container中启动定时任务"
 date:   2016-02-21 12:59:49 +0000
+parent: "云原生和微服务架构"
 nav_order: 13
 ---
 ## 设置cron
