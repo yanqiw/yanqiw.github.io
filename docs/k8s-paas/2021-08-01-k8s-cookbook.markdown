@@ -2,6 +2,7 @@
 layout: post
 title:  "k8s 自制手册"
 date:   "20210801_173200"
+parent: "云原生和微服务架构"
 nav_order: 10
 ---
 k8s 自制手册

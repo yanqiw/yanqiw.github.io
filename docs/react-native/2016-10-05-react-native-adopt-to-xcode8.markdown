@@ -2,8 +2,8 @@
 layout: "post"
 title: "React Native 0.27.x adopt to xcode 8"
 date: "2016-10-05 14:23:40"
-parent: "React Native入门总结"
-nav_order: 99
+parent: "React Native 相关内容"
+nav_order: 30
 ---
 
 React Native 0.27.0 adopt to xcode 8

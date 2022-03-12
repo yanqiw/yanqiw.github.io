@@ -2,6 +2,7 @@
 layout: post
 title:  "使用“阿里云-云效”构建 jekyll 博客"
 date:   "20210123_184000"
+parent: "云原生和微服务架构"
 nav_order: 20
 ---
 
@@ -59,6 +60,11 @@ COPY ./public /usr/share/nginx/html
 
 #  Webhook
 云效提供 webhook 功能，可以支持从代码库触发构建。 将 Webhook 地址填入对应的  git 服务  webhook  回调地址即可触发。 如果 git 服务回调默认会传入一些  payload,  需要在 flow 的 “变量和缓存”配置中，配置一个 payload  一直包含的变量，否则将无法触发流水线。 以 gitee 为例， gitee  的 webhook  回调默认会携带  payload。payload 中一直会存在“timestamp”变量。为了 Flow 可以准确出发，需要在对应的流水线上的“变量和缓存”中添加一个“timestamp”变量，并设置默认值（默认值可以随意设置，例如：0）。 设置后， gitee  回调即可触发流水线构建。
+
+> Flow 的“镜像构建并推送阿里云”有个BUG。通过 Webhook 出发的时候无法正确找到“工作目录”，默认使用 `/root/workspace/code` 路径，如果在“构建代码源”设置的时，“工作目录”设为成非“code”的其他名字，镜像构建时就会报错。 所以，这里需要吧“构建代码源”中的“工作目录”设置为`code`。
+
+# 通知
+Flow 允许为流水线添加“成功”和“失败”的通知。目前支持“企业微信”，“钉钉”和“飞书”三种企业 IM 的群机器人通知。具体配置方式可以参考(官网文档)[https://help.aliyun.com/document_detail/153690.html]。 因为“企业微信”和“钉钉”创建群需要至少三个人，而“飞书”可以创建只有自己的群。所以，这里是用飞书作为个人博客构建的通知接收方式。
 
 # 发布 k8s 集群
 
