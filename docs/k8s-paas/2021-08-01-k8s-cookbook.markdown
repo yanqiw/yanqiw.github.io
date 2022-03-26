@@ -459,6 +459,13 @@ spec:
  
 ```
 
+通过脚本在 k8s 上部署 nacos
+```bash
+cd nacos-k8s
+chmod +x quick-startup.sh
+./quick-startup.sh
+```
+
 ### 验证部署结果
 
 __⚠️注意：访问地址一定要带路径: /nacos__
