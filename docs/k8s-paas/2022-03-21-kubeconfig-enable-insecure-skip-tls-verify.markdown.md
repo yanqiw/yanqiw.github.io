@@ -2,7 +2,7 @@
 layout: "post"
 title: "在 kubeconfig 文件中使用 insecure-skip-tls-verify 小技巧"
 date: "2022-02-27 11:11:11"
-has_children: true
+parent: "云原生和微服务架构"
 nav_order: 12
 ---
 
