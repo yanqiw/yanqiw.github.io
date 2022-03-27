@@ -491,6 +491,48 @@ cd nacos/bin
 sh startup.sh -m standalone
 ```
 
+## 部署使用本地路径的 MySQL
+nacos 默认安装脚本会使用 ./deploy/mysql/mysql-local.yaml 部署 MySQL。 这份配置默认加载主机路径作为 MySQL 文件存储盘。 当MySQL重新调度时，如果被移动到其他节点数据将丢失。所以需要对 mysql-local.yaml 加以修改，为其添加 nodeSelector 配置，使其可以一直固定在对应标签的节点之上。
+因为 mysql-local.yaml 还是在使用 k8s 已经不推荐的 replcationcontroller 来部署，所以顺便将此文件改成 deployment 方式部署。 配置如下：
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: mysql
+  template:
+    metadata:
+      labels:
+        name: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: nacos/nacos-mysql:5.7
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        env:
+          ...
+      volumes:
+      - name: mysql-data
+        hostPath:
+          path: /var/lib/mysql
+      # 添加节点选择配置， 节点上添加对应标签。 注意：这里标签的值只能是 string 类型。
+      nodeSelector: 
+        "host-type": "mysql"
+---
+apiVersion: v1
+kind: Service
+...
+```
 
 # 安装 MySQL Admin
 
@@ -498,6 +540,7 @@ sh startup.sh -m standalone
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install mysql-admin bitnami/phpmyadmin
 ```
+
 
 # 安装 Redis
 使用 helm 安装 bitnami/redis 有两种方式。 第一种：创建 storageClass 第二种：手动创建 PV/PVC 。 第一种，需要在 k8s 上创建一个公共的 storageClass 动态给PVC消费。 因为之前并没有创建过公用 storageClass, 所以这里是用第二种方式。 
