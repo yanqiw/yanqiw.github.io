@@ -16,3 +16,12 @@ nav_order: 23
 一些注意细节：
 ### Java 版本问题
 系统默认  Java  版本必须是 11 及以上。 这对于本身有一些  java 8 应用需要独立运行时并不友好。所以，可以在 bash_profile  或者  zshrc  中配置 JAVA_HOME 变量。 
+
+# 一些常用设置
+##  region  的使用
+VS Code 自带 Region 特性：https://code.visualstudio.com/docs/editor/codebasics#_folding 
+Region 关键字可以用来定义折叠的区域，加速代码浏览效率。 也可以通过安装一个 region view 插件，在左侧快速查找对应的代码快。 
+
+## 在VS code中为 Java 类生成序列化版本号
+参考以下文章：
+https://blog.51cto.com/u_15069438/4188017
