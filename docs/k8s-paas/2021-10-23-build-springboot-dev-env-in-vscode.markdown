@@ -25,3 +25,17 @@ Region 关键字可以用来定义折叠的区域，加速代码浏览效率。 
 ## 在VS code中为 Java 类生成序列化版本号
 参考以下文章：
 https://blog.51cto.com/u_15069438/4188017
+
+## 关闭编译前检查提示
+如果项目空间中存在 Error， 尽管当前项目并未使用。但 bebugger for java 插件依然会在编译运行前弹框提示，使整个开发过程不能丝滑进行。所以，需要关闭提示，已更加专注。 
+方法如下：
+`cmd + p` 输入 `workspace setting`，打开工作区设置。添加 `settings` 属性，如果已存在直接添加对应属性即可。
+```json
+{
+  ...
+  	"settings": {
+		"java.debug.settings.onBuildFailureProceed": true
+	}
+	....
+}
+```
