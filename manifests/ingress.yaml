@@ -4,14 +4,14 @@ metadata:
   name: my-blog-nginx-ingress
 spec:
   rules:
-    - host: yanqiw.cn
+    - host: frankwang.cn
       http:
         paths:
           - backend:
               serviceName: my-blog
               servicePort: 80
             path: /
-    - host: blog.yanqiw.cn 
+    - host: blog.frankwang.cn 
       http:
         paths:
           - backend:
