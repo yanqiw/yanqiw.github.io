@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+
+const posts = (await getCollection('posts', ({ data }) => {
+	return data.draft !== true;
+})).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BaseLayout title="All Posts | Francis Wang">
+	<section class="max-w-7xl mx-auto px-6 mb-20">
+		<div class="flex flex-col gap-2 mb-12">
+			<span class="text-cyan-400 font-mono text-sm tracking-widest uppercase">Archive</span>
+			<h1 class="text-4xl md:text-6xl font-bold tracking-tight">
+				All Thoughts.
+			</h1>
+		</div>
+
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+			{posts.map((post) => (
+				<PostCard post={post} />
+			))}
+		</div>
+	</section>
+</BaseLayout>

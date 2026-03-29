@@ -1,0 +1,39 @@
+---
+import { type CollectionEntry } from 'astro:content';
+
+interface Props {
+	post: CollectionEntry<'posts'>;
+	class?: string;
+}
+
+const { post, class: className } = Astro.props;
+const { title, pubDate, category, description } = post.data;
+---
+
+<a 
+	href={`/posts/${post.slug}`}
+	class:list={[
+		"glass rounded-3xl p-6 flex flex-col justify-between hover:border-cyan-500/50 hover:bg-slate-900/40 transition-all group",
+		className
+	]}
+>
+	<div>
+		<div class="flex items-center gap-3 mb-4">
+			<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+				{category}
+			</span>
+			<time class="text-[10px] text-slate-500 font-mono">
+				{pubDate.toLocaleDateString()}
+			</time>
+		</div>
+		<h3 class="text-xl font-bold leading-tight group-hover:text-cyan-400 transition-colors mb-2">
+			{title}
+		</h3>
+		{description && <p class="text-sm text-slate-400 line-clamp-3">{description}</p>}
+	</div>
+	
+	<div class="mt-6 flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-cyan-400 transition-colors">
+		Read More 
+		<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+	</div>
+</a>

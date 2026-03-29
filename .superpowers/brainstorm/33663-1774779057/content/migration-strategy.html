@@ -1,0 +1,27 @@
+<h2>How should we migrate your existing content?</h2>
+<p class="subtitle">Your posts use Jekyll frontmatter and some have custom categories. Astro handles these differently.</p>
+
+<div class="options">
+  <div class="option" data-choice="scripted" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Scripted Migration (Recommended)</h3>
+      <p>I'll write a script to automatically convert Jekyll markdown files to Astro-compatible MDX/Markdown. This ensures consistency and handles frontmatter transformation (e.g., tags, categories, dates).</p>
+      <div class="pros-cons">
+        <div class="pros"><ul><li>Fast for many posts</li><li>Reliable data mapping</li></ul></div>
+        <div class="cons"><ul><li>May require manual cleanup for complex HTML</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="selective" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Selective/Manual Porting</h3>
+      <p>We pick the most important posts and port them manually. Older or less relevant content stays in the old repo or is archived.</p>
+      <div class="pros-cons">
+        <div class="pros"><ul><li>Cleans up old content</li><li>Highest quality control</li></ul></div>
+        <div class="cons"><ul><li>Time-consuming</li><li>Risks losing historical data</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

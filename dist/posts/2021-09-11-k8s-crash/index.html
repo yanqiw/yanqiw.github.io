@@ -1,0 +1,97 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v4.16.19"><title>k8s 崩溃修复 | Francis Wang</title><meta name="description" content="Francis Wang's AI-era blog"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/_astro/_category_.BQx3biXr.css">
+<style>:root{--font-sans: "Inter", sans-serif;--font-mono: "JetBrains Mono", monospace}html{scroll-behavior:smooth}body{font-family:var(--font-sans)}code,pre{font-family:var(--font-mono)}.glass{background:#1e293b66;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1)}
+.prose pre{border:1px solid rgba(255,255,255,.1)!important;box-shadow:0 10px 30px -10px #00000080}.prose h2{margin-top:3rem;margin-bottom:1.5rem;font-size:1.5rem;line-height:2rem;color:#06b6d4e6}.prose p{margin-bottom:1.5rem;line-height:1.625;--tw-text-opacity: 1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.prose img{border-radius:1.5rem;border-width:1px;border-color:#ffffff1a}
+</style></head> <body class="bg-slate-950 text-slate-200 min-h-screen font-sans selection:bg-cyan-500/30"> <header class="fixed top-0 w-full z-50 bg-slate-950/50 backdrop-blur-md border-b border-white/10"> <nav class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between"> <a href="/" class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+Francis Wang
+</a> <div class="flex gap-8 text-sm font-medium"> <a href="/" class="hover:text-cyan-400 transition-colors">Home</a> <a href="/posts" class="hover:text-cyan-400 transition-colors">Posts</a> <a href="https://github.com/yanqiw" class="hover:text-cyan-400 transition-colors">GitHub</a> </div> </nav> </header> <main class="pt-24 pb-12">  <article class="max-w-3xl mx-auto px-6 py-12"> <header class="mb-12"> <div class="flex items-center gap-4 mb-6"> <span class="px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"> 云原生和微服务架构 </span> <time class="text-sm text-slate-500 font-mono"> 2026/3/29 </time> </div> <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6"> k8s 崩溃修复 </h1>  </header> <div class="prose prose-invert prose-cyan max-w-none prose-headings:font-bold prose-a:text-cyan-400 prose-pre:glass prose-pre:rounded-2xl">  <h1 id="k8s-崩溃排查">K8S 崩溃排查</h1>
+<p>记录一次 K8S 意外崩溃，修复思路，和复盘。</p>
+<p>集群规格：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>节点名</th><th>规格</th><th>说明</th></tr></thead><tbody><tr><td>Master-01</td><td>2 CPU, 4 GB</td><td>控制节点（开启允许部署应用）</td></tr><tr><td>Node-01</td><td>4 CUP, 8 GB</td><td>运行节点</td></tr><tr><td>Node-02</td><td>4 CPU, 8 GB</td><td>运行节点</td></tr></tbody></table>
+<h2 id="安装-ranucher-导致节点内存不足">安装 Ranucher 导致节点内存不足</h2>
+<p>崩溃起因为，使用 Helm chart 在 K8S 集群上部署 Rancher 。 安装后，初始状态一切正常，可以看到 local 集群，并进行简单管理。20分钟左右，其中一个 node 内存持续飙升， 导致重启。 集群开始调度 pod 到另外一个 node, 导致另外一个 node 内存飙升。出现雪崩效应。 Master 节点 CPU 使用率 100%。整个集群开始不响应任何请求。</p>
+<h2 id="修复思路">修复思路</h2>
+<p>因集群上Pod大部分处在内存不足，停止，重启的过程。 无法使用 kubeadmin dashboard 通过 Web 管理集群。仅能通过控制节点上的 kubectl 来链接 K8S，效率低下。所以，先找到一个高效管理的工具， 对集群进行观测。再通过观测结果，做出相应修复方案，并执行。</p>
+<h3 id="高效的-k8s-终端管理工具---k9s">高效的 K8S 终端管理工具 - K9S</h3>
+<p><a href="https://k9scli.io/">K9S</a> 是一套运行在命令行内的管理工具，使用习惯于 VIM 类似。通过K9S可以快速查看集群状况，在终端环境下可以高效运维集群。</p>
+<p><img src="https://k9scli.io/assets/screens/pulses.png" alt="k9s screen"></p>
+<p><img src="https://k9scli.io/assets/screens/pods.png" alt="k9s screen"></p>
+<h3 id="观测问题">观测问题</h3>
+<p>在安装 K9S 之后， 通过观测发现 Helm chart 安装的 Rancher，带有全部特性包括多集群管理的 Fleet 特性。因为这些重量级的特性，导致集群内 Node 节点内存始终会被占满，导致重启。 发现了问题，也有了大致的解决问题的方向 —— <strong>将 Rancher 从集群内清除!!!</strong></p>
+<h4 id="修复方案">修复方案</h4>
+<p>因为本身集群是用来做实验的测试集群，所以并不要求持续可用。 经过与同事讨论，方案有三个。</p>
+<h5 id="方案一重置三台虚拟机使用-rke-重新拉起">方案一：重置三台虚拟机，使用 RKE 重新拉起</h5>
+<p>方案简单粗暴。对于临时测试集群来说算是一种一了百了的高效方案。</p>
+<p>优势：使用 RKE 可以快速拉起一套 K8S 集群，不需要太多多人工干预。同时，可以再体验一下 RKE 管理的K8S。</p>
+<p>劣势：之前群上的一些应用需要重新安装。例如：ELK 全家桶，Nacos 等等。。。</p>
+<h5 id="方案二从服务器上产掉k8s通过-kubeadmin-手动拉起">方案二：从服务器上产掉K8S，通过 Kubeadmin 手动拉起</h5>
+<p>方案挑战较多。首先，要清理K8S 的残留文件。其次，手动拉起虽然有脚本支持，但也避免不了一些意外情况。</p>
+<p>优势：可以演练一下产掉 K8S，重新定制化手动拉起的过程。</p>
+<p>劣势：周期较长，有因为未清理干净，从而导致再次安装出现意外情况的可能。</p>
+<h5 id="方案三手动清理-rancher-stack">方案三：手动清理 Rancher Stack</h5>
+<p>方案对现有集群影响最小。</p>
+<p>优势：影响最小，可以通过逐个删除 Rancher Stack 的 Namespace 来完成资源删除。可以演练生产环境时，不能删除集群的情况。</p>
+<p>劣势：有一些挂掉的 K8S 服务需要重新启动，并关联。</p>
+<h4 id="选择方案并修复">选择方案，并修复</h4>
+<p>既然是测试集群，本着折腾的原则。决定先采用__方案三__演练一下生产环境不能删除集群时的灾难恢复。</p>
+<h5 id="删除-rancher-stack">删除 Rancher Stack</h5>
+<p>删除过程使用 K9S 非常简单高效。通过，namespece 视图选取相应的 namespace 使用 <code>ctrl+d</code> 快捷键即可启动删除操作。</p>
+<h5 id="等待-k8s-自愈">等待 K8S 自愈</h5>
+<p>因为控制节点仅仅是 CPU 拉满，当 Rancher Stack 被逐渐删除后，控制节点开始恢复运转。 期间，Node-01 因始终无法接到清理指令，一直无法恢复，只能通过阿里云控制台强行重启。</p>
+<p>最终，所有节点恢复运转，控制节点开始重新调度上层应用。</p>
+<h5 id="手动恢复操作">手动恢复操作</h5>
+<p>集群开始运行后，出现了以下问题几个问题。</p>
+<h6 id="nacos-无法创建-endpoint">Nacos 无法创建 endpoint</h6>
+<blockquote>
+<p>错误信息： the object has been modified; please apply your changes to the latest version and try again</p>
+<p>经过排查得到官网说明：由于 etcd restore 之后，在重启 kube-apiserver 之前，控制平面各个组件缓存中的 Object 版本跟 etcd 备份中不一致。解决方法是是在 etcd restore 之后，重启控制平面所有组件。</p>
+</blockquote>
+<p>通过 k9s 手动重启了所有 kube-system 下的 pod。⚠️注意：要从 pod 视图逐一删除pod。</p>
+<h6 id="nacos-数据丢失">Nacos 数据丢失</h6>
+<p>Nacos 重新启动后，之前的数据丢失，手动将本地保存的 Config 和 Namespace 恢复。 这个原因带排查，初步猜测原因是 Node 挂掉后，mysql Pod 被调度到另外一个节点，并重新初始化了数据库。或是，在恢复 Nacos 过程中失误删掉了数据库。</p>
+<h6 id="手动拉起-kafka">手动拉起 Kafka</h6>
+<p>集群正常启动后，发现日志没有进去 elasticsearch。 因为，之前 Kafka 是部署在 K8S 集群之外的 Node-01 上。所以，需要手动在 Node-01 上通过 docker-compose 启动。</p>
+<h5 id="一切恢复">一切恢复</h5>
+<p>经过一番折腾，在没有删除集群的情况下，将服务逐一恢复。历时 6 个小时，如果是真正的线上问题，已经可以定级为__严重故障__。</p>
+<p>所以，需要复盘一下。</p>
+<h2 id="复盘">复盘</h2>
+<h3 id="关键问题点">关键问题点</h3>
+<ul>
+<li>在使用 Helm 安装 Rancher 之前，虽然检查过 Pre-requirement，但是对于要求的服务器规格理解不到位。导致没有准确评估出现有集群规格无法满足部署条件。</li>
+<li>集群再部署前内存水位线已接近临界值，但并没有被注意到。</li>
+<li>集群挂掉之前，并没有灾备预案。导致恢复过程属于“摸石头过河”。</li>
+<li>运维自动化程度不够，无论是重新拉起，还是恢复上层应用都需要手动操作。</li>
+</ul>
+<h3 id="经验教训">经验教训</h3>
+<ul>
+<li>部署前一定要详细了解 Pre-requirement，做好风险分析</li>
+<li>生产级集群在部署新应用前，要做容量估算和检查，预留好充足资源</li>
+<li>生产级集群需要有灾备预案，并定期进行演练，以提高运维团队应对突发状况的能力</li>
+<li>添加自动化运维能力，例如: Ansible, Terraform</li>
+</ul>  </div> </article>  </main> <footer class="border-t border-white/5 py-12"> <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6"> <p class="text-sm text-slate-500">
+&copy; 2026 Francis Wang. Built with Astro & Bento.
+</p> <div class="flex gap-6 text-slate-400"> <!-- Social links could go here --> </div> </div> </footer> </body></html> 

@@ -1,0 +1,75 @@
+---
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = "Francis Wang's AI-era blog" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+	</head>
+	<body class="bg-slate-950 text-slate-200 min-h-screen font-sans selection:bg-cyan-500/30">
+		<header class="fixed top-0 w-full z-50 bg-slate-950/50 backdrop-blur-md border-b border-white/10">
+			<nav class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+				<a href="/" class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+					Francis Wang
+				</a>
+				<div class="flex gap-8 text-sm font-medium">
+					<a href="/" class="hover:text-cyan-400 transition-colors">Home</a>
+					<a href="/posts" class="hover:text-cyan-400 transition-colors">Posts</a>
+					<a href="https://github.com/yanqiw" class="hover:text-cyan-400 transition-colors">GitHub</a>
+				</div>
+			</nav>
+		</header>
+		<main class="pt-24 pb-12">
+			<slot />
+		</main>
+		<footer class="border-t border-white/5 py-12">
+			<div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+				<p class="text-sm text-slate-500">
+					&copy; {new Date().getFullYear()} Francis Wang. Built with Astro & Bento.
+				</p>
+				<div class="flex gap-6 text-slate-400">
+					<!-- Social links could go here -->
+				</div>
+			</div>
+		</footer>
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		--font-sans: 'Inter', sans-serif;
+		--font-mono: 'JetBrains Mono', monospace;
+	}
+	
+	html {
+		scroll-behavior: smooth;
+	}
+
+	body {
+		font-family: var(--font-sans);
+	}
+
+	code, pre {
+		font-family: var(--font-mono);
+	}
+
+	.glass {
+		background: rgba(30, 41, 59, 0.4);
+		backdrop-filter: blur(12px);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+</style>

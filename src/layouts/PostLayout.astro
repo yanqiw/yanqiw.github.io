@@ -1,0 +1,54 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { type CollectionEntry } from 'astro:content';
+
+interface Props {
+	post: CollectionEntry<'posts'>;
+}
+
+const { post } = Astro.props;
+const { title, pubDate, category, description } = post.data;
+---
+
+<BaseLayout title={`${title} | Francis Wang`} description={description}>
+	<article class="max-w-3xl mx-auto px-6 py-12">
+		<header class="mb-12">
+			<div class="flex items-center gap-4 mb-6">
+				<span class="px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+					{category}
+				</span>
+				<time class="text-sm text-slate-500 font-mono">
+					{pubDate.toLocaleDateString()}
+				</time>
+			</div>
+			<h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6">
+				{title}
+			</h1>
+			{description && <p class="text-xl text-slate-400 leading-relaxed italic">{description}</p>}
+		</header>
+
+		<div class="prose prose-invert prose-cyan max-w-none prose-headings:font-bold prose-a:text-cyan-400 prose-pre:glass prose-pre:rounded-2xl">
+			<slot />
+		</div>
+	</article>
+</BaseLayout>
+
+<style is:global>
+	/* Custom typography overrides for glass effect and AI feel */
+	.prose pre {
+		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+	}
+	
+	.prose h2 {
+		@apply text-2xl mt-12 mb-6 text-cyan-500/90;
+	}
+	
+	.prose p {
+		@apply leading-relaxed text-slate-300 mb-6;
+	}
+
+    .prose img {
+        @apply rounded-3xl border border-white/10;
+    }
+</style>

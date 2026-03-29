@@ -1,0 +1,112 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v4.16.19"><title>React Native入门总结 | Francis Wang</title><meta name="description" content="Francis Wang's AI-era blog"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/_astro/_category_.BQx3biXr.css">
+<style>:root{--font-sans: "Inter", sans-serif;--font-mono: "JetBrains Mono", monospace}html{scroll-behavior:smooth}body{font-family:var(--font-sans)}code,pre{font-family:var(--font-mono)}.glass{background:#1e293b66;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1)}
+.prose pre{border:1px solid rgba(255,255,255,.1)!important;box-shadow:0 10px 30px -10px #00000080}.prose h2{margin-top:3rem;margin-bottom:1.5rem;font-size:1.5rem;line-height:2rem;color:#06b6d4e6}.prose p{margin-bottom:1.5rem;line-height:1.625;--tw-text-opacity: 1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.prose img{border-radius:1.5rem;border-width:1px;border-color:#ffffff1a}
+</style></head> <body class="bg-slate-950 text-slate-200 min-h-screen font-sans selection:bg-cyan-500/30"> <header class="fixed top-0 w-full z-50 bg-slate-950/50 backdrop-blur-md border-b border-white/10"> <nav class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between"> <a href="/" class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+Francis Wang
+</a> <div class="flex gap-8 text-sm font-medium"> <a href="/" class="hover:text-cyan-400 transition-colors">Home</a> <a href="/posts" class="hover:text-cyan-400 transition-colors">Posts</a> <a href="https://github.com/yanqiw" class="hover:text-cyan-400 transition-colors">GitHub</a> </div> </nav> </header> <main class="pt-24 pb-12">  <article class="max-w-3xl mx-auto px-6 py-12"> <header class="mb-12"> <div class="flex items-center gap-4 mb-6"> <span class="px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"> React Native 相关内容 </span> <time class="text-sm text-slate-500 font-mono"> 2016/5/12 </time> </div> <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6"> React Native入门总结 </h1>  </header> <div class="prose prose-invert prose-cyan max-w-none prose-headings:font-bold prose-a:text-cyan-400 prose-pre:glass prose-pre:rounded-2xl">  <h1 id="react-native入门总结">React Native入门总结</h1>
+<p>用Javascript, HTML, CSS开发APP已经被谈论了很多年了，在<a href="https://facebook.github.io/react-native/">React Native</a>之前， <a href="https://cordova.apache.org/">Cordova</a>一直是首选， 在Cordova的基础上有很多优秀的框架，但是WebView的性能始终是纯H5技术的APP无法跨越的沟， 在用户体验至上的今天，性能问题变得尤为重要。 React Native通过编译将web的组件转换成native的组件，很大的提升了APP的性能。 目前，React Native支持Android和iOS两大主流平台，并被应用在很多知名项目中。</p>
+<p>下面是cordova和React Native的架构图，可以很容易看出两者的不同之处：</p>
+<h2 id="cordova架构">Cordova架构</h2>
+<p><a href="https://cordova.apache.org/docs/en/latest/guide/overview/index.html">图片来自Cordova官网</a>
+<img src="https://cordova.apache.org/static//img/guide/cordovaapparchitecture.png" alt="Cordova架构"></p>
+<h2 id="react-native架构">React Native架构</h2>
+<p><a href="http://www.ibm.com/developerworks/library/mo-bluemix-react-native-ios8/">图片来自React Native: Into a new world of rapid iOS development</a></p>
+<p><img src="http://www.ibm.com/developerworks/library/mo-bluemix-react-native-ios8/Figure1.png" alt="React Native架构"></p>
+<h1 id="准备工作">准备工作</h1>
+<p>再开始React Native之前，需要准备安装：</p>
+<ul>
+<li>Node</li>
+<li>Android SKD (for android)</li>
+<li>Xcode (for iOS)</li>
+</ul>
+<h2 id="开发用具">开发用具:</h2>
+<p>因为开发React Native用到的是Javascript，所以可选择的空间很大，首推的还是<a href="https://www.jetbrains.com/webstorm/">JetBrains</a>家的<a href="https://www.jetbrains.com/webstorm/">WebStorm</a>， 如果觉得太重GitHub家的<a href="https://atom.io/">Atom</a>也是不错的选择，加上Facebook新推出的插件<a href="http://nuclide.io/">Nuclide</a>也是很强大的。</p>
+<blockquote>
+<p>注意：在Windows上面有时候Atom会占用大量CPU资源，导致笔记本发热严重. 建议在windows上使用<a href="https://www.sublimetext.com/">Sublime</a>编辑器。</p>
+</blockquote>
+<p>Android开发推荐<a href="http://developer.android.com/intl/zh-cn/tools/studio/index.html">Android Studio</a>。</p>
+<p>iOS开发没得选，直接从App Store下载xCode。</p>
+<h2 id="安装react-native">安装React Native</h2>
+<p>下面步骤基于<code>Mac OS X</code>系统。 对于其他操作系统，你可以参考<a href="https://facebook.github.io/react-native/docs/getting-started.html">React Native官网</a>安装</p>
+<h3 id="安装node">安装Node</h3>
+<h4 id="安装homebrew">安装Homebrew</h4>
+<p>在Mac上使用<code>brew</code>安装nodejs是非常方便的， 如果你已经有了<code>Homebrew</code>可以直接跳过这步。
+打开Terminal运行：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"</span></span>
+<span class="line"><span></span></span></code></pre>
+<h4 id="安装node-1">安装Node</h4>
+<p>React Native需要4.0以上的版本。Homebrew会安装最新的6.0版本。</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>sudo npm install -g react-native-cli</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="安装android-studio">安装Android Studio</h3>
+<p>在android stuido官网下载安装包并安装。安装后，需要下载SKD。选择：<code>Android Studio > Preference > System Settings > Android SDK</code>中选择相应的android版本的SKD。</p>
+<blockquote>
+<p>建议使用5.0以上的Android版本用于开发和调试，稳定性会远高于4.0+版本。</p>
+</blockquote>
+<p>设置<code>ANDROID_HOME</code>环境变量，这部很重要，如果稍后React Native运行不了，多半是这里设置的不正确。
+打开 <code>~/.bashrc</code>或<code>~/.bash_profile</code>, 如果没有运行</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>touch ~/.bashrc # or ~/.bash_profile</span></span>
+<span class="line"><span></span></span></code></pre>
+<p>在文件中输入下面命令：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span># 如果SDK不是通过android studio安装的， 那么它可能在以下路径:</span></span>
+<span class="line"><span># /usr/local/opt/android-sdk</span></span>
+<span class="line"><span>export ANDROID_HOME=~/Library/Android/sdk</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="安装watchman">安装Watchman</h3>
+<p>建议安装Watchman来监控文件夹变化, 自动触发一些事件</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>brew install watchman</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="安装genymotion">安装Genymotion</h3>
+<p>强烈推荐的模拟器，可以方便的安装不同型号的Android手机模拟器。</p>
+<ul>
+<li>在<a href="https://www.genymotion.com/">Genymotion</a>官网注册账号</li>
+<li>登陆后在<a href="https://www.genymotion.com/download/"><code>下载页面</code></a>下载安装包</li>
+<li>根据说明安装</li>
+</ul>
+<h1 id="创建项目">创建项目</h1>
+<p>创建一个React Native项目很简单，至于要一行命令：</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>react-native init AwesomeProject</span></span>
+<span class="line"><span>cd AwesomeProject</span></span>
+<span class="line"><span>npm install</span></span>
+<span class="line"><span></span></span></code></pre>
+<h2 id="运行android项目">运行Android项目</h2>
+<ul>
+<li>运行一个Genymotion的虚拟机</li>
+<li>在<code>AwesomeProject</code>文件夹下运行<code>react-native run-android</code></li>
+</ul>
+<p>刚刚初始化的项目会被编译并安装在虚拟机中， 在编辑器中打开<code>AwesomeProject</code>文件夹，就可以进行开发项目了。</p>
+<blockquote>
+<p>第一次启动时会下载依赖包，需要耐心等待很久。 根据网络情况，你可能需要设置代理才能完成下载。</p>
+</blockquote>
+<h2 id="运行ios项目">运行iOS项目</h2>
+<p>在<code>AwesomeProject</code>文件夹下运行<code>react-native run-ios</code>。</p>
+<h1 id="第一枪">第一枪</h1>
+<p>在虚拟设备上运行的时候，一切会很顺利，但是第一次将项目放到真实android设备中运行时，大多数人都会中上React Native的第一枪－<a href="https://github.com/facebook/react-native/issues/4952"><code>Can't find variable: _fbBatchedBridge</code></a>。</p>
+<p><img src="https://cloud.githubusercontent.com/assets/587438/11986090/a1a814d6-a999-11e5-8120-82a6391d0531.png" alt="Can&#x27;t find variable: _fbBatchedBridge"></p>
+<p>有时也可能是一个大白页面。</p>
+<p>解决办法也很简单，在<code>Dev setting</code>里面设置<code>电脑的IP:8081</code>，再刷新就可以解决。</p>
+<blockquote>
+<p>很多国内定制版的android系统不能通过menu键调出<code>Dev setting</code>。 这时需要在手机的<code>设置->应用->[项目app]->权限管理</code>中启动<code>显示悬浮窗口。 </code></p>
+</blockquote>
+<h1 id="修改项目">修改项目</h1>
+<h2 id="android">Android</h2>
+<p>使用之前介绍人任何一款编辑器打开<code>AwesomeProject</code>中的<code>index.android.js</code>,并加入自己的代码，开始你的项目。</p>
+<h2 id="ios">iOS</h2>
+<p><code>index.ios.js</code>是iOS的入口文件，可以参考<a href="http://reactnative.cn/">React Native官方网站</a>进行项目开发，这里不过多介绍。</p>
+<h1 id="调试">调试</h1>
+<h2 id="在android模拟器上调试">在Android模拟器上调试</h2>
+<p>运行<code>Genymontion</code>选择一个模拟器运行。在项目路径运行<code>react-native run-android</code>。项目启动后，可以通过菜单模拟键调出开发者菜单，选择reload javascript来刷新修改后的代码。也可以开启调.试模式。</p>
+<blockquote>
+<p>开启调试模式的时候会弹出浏览器，这里需要手动打开<code>开发者工具</code>才能看到控制台和调试</p>
+</blockquote>
+<h2 id="在android设备上调试">在Android设备上调试</h2>
+<p>在Android设备上打开调试模式， 并将设备通过数据线连接到电脑上运行<code>react-native run-android</code>。</p>
+<blockquote>
+<p>请关闭其他android虚拟机，以避免安装应用到设备时出现错误。如果设备上启动应用后白屏，请参考<code>第一枪</code>这一段。</p>
+</blockquote>
+<h1 id="发布">发布</h1>
+<p>待续</p>
+<h1 id="后续反思">后续反思</h1>
+<p>待续</p>  </div> </article>  </main> <footer class="border-t border-white/5 py-12"> <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6"> <p class="text-sm text-slate-500">
+&copy; 2026 Francis Wang. Built with Astro & Bento.
+</p> <div class="flex gap-6 text-slate-400"> <!-- Social links could go here --> </div> </div> </footer> </body></html> 

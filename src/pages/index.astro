@@ -1,0 +1,63 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BentoGrid from '../components/BentoGrid.astro';
+import PostCard from '../components/PostCard.astro';
+
+const posts = (await getCollection('posts', ({ data }) => {
+	return data.draft !== true;
+})).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const featuredPost = posts[0];
+const remainingPosts = posts.slice(1);
+---
+
+<BaseLayout title="Francis Wang | AI-Era Blog">
+	<section class="max-w-7xl mx-auto px-6 mb-20">
+		<div class="flex flex-col gap-2 mb-12">
+			<span class="text-cyan-400 font-mono text-sm tracking-widest uppercase">Latest Updates</span>
+			<h1 class="text-5xl md:text-7xl font-bold tracking-tight">
+				Insights in the <br/>
+				<span class="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent italic">AI Era.</span>
+			</h1>
+		</div>
+
+		<BentoGrid>
+			<!-- Featured Card -->
+			{featuredPost && (
+				<PostCard 
+					post={featuredPost} 
+					class="md:col-span-2 md:row-span-2"
+				/>
+			)}
+			
+			<!-- Introduction Card -->
+			<div class="glass rounded-3xl p-8 flex flex-col justify-center bg-gradient-to-br from-indigo-500/10 to-purple-500/10 md:col-span-1 md:row-span-1">
+				<h2 class="text-xl font-bold mb-2">Hello, I'm Frank.</h2>
+				<p class="text-slate-400 text-sm leading-relaxed">
+					Documenting my journey through Docker, Kubernetes, and AI-driven architecture.
+				</p>
+			</div>
+
+			<!-- Remaining Posts -->
+			{remainingPosts.slice(0, 5).map((post, index) => (
+				<PostCard 
+					post={post} 
+					class={index === 0 ? "md:col-span-1 md:row-span-2" : "md:col-span-1 md:row-span-1"}
+				/>
+			))}
+
+			<!-- Categories Card (Visual Placeholder) -->
+			<div class="glass rounded-3xl p-6 flex flex-col gap-3 md:col-span-1 md:row-span-1 overflow-hidden">
+				<h3 class="text-xs font-bold uppercase tracking-widest text-slate-500">Categories</h3>
+				<div class="flex flex-wrap gap-2">
+					{Array.from(new Set(posts.map(p => p.data.category))).map(cat => (
+						<span class="px-2 py-1 rounded-lg bg-slate-800 text-[10px] border border-white/5 whitespace-nowrap">
+							{cat}
+						</span>
+					))}
+				</div>
+			</div>
+		</BentoGrid>
+	</section>
+</BaseLayout>

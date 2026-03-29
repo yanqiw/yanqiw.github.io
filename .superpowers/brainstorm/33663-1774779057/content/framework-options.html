@@ -1,0 +1,27 @@
+<h2>Which framework should we use?</h2>
+<p class="subtitle">Both support MDX and modern UI, but they differ in performance and complexity.</p>
+
+<div class="options">
+  <div class="option" data-choice="astro" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Astro (Recommended)</h3>
+      <p>Zero-JS by default for industry-leading performance. Built specifically for content sites. Great MDX support and easy deployment.</p>
+      <div class="pros-cons">
+        <div class="pros"><ul><li>Fastest performance</li><li>Simpler mental model</li></ul></div>
+        <div class="cons"><ul><li>Smaller ecosystem than Next.js</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="nextjs" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Next.js (App Router)</h3>
+      <p>The industry standard for React apps. Powerful but more complex. Best if you plan to add highly interactive apps or dashboards later.</p>
+      <div class="pros-cons">
+        <div class="pros"><ul><li>Huge ecosystem (Shadcn UI)</li><li>Powerful dynamic features</li></ul></div>
+        <div class="cons"><ul><li>Higher JS overhead</li><li>More complex build/config</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

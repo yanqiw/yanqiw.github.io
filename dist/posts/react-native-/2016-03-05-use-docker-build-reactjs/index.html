@@ -1,0 +1,114 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v4.16.19"><title>使用docker创建ReactJS开发环境，实时编译JSX | Francis Wang</title><meta name="description" content="Francis Wang's AI-era blog"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/_astro/_category_.BQx3biXr.css">
+<style>:root{--font-sans: "Inter", sans-serif;--font-mono: "JetBrains Mono", monospace}html{scroll-behavior:smooth}body{font-family:var(--font-sans)}code,pre{font-family:var(--font-mono)}.glass{background:#1e293b66;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1)}
+.prose pre{border:1px solid rgba(255,255,255,.1)!important;box-shadow:0 10px 30px -10px #00000080}.prose h2{margin-top:3rem;margin-bottom:1.5rem;font-size:1.5rem;line-height:2rem;color:#06b6d4e6}.prose p{margin-bottom:1.5rem;line-height:1.625;--tw-text-opacity: 1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.prose img{border-radius:1.5rem;border-width:1px;border-color:#ffffff1a}
+</style></head> <body class="bg-slate-950 text-slate-200 min-h-screen font-sans selection:bg-cyan-500/30"> <header class="fixed top-0 w-full z-50 bg-slate-950/50 backdrop-blur-md border-b border-white/10"> <nav class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between"> <a href="/" class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+Francis Wang
+</a> <div class="flex gap-8 text-sm font-medium"> <a href="/" class="hover:text-cyan-400 transition-colors">Home</a> <a href="/posts" class="hover:text-cyan-400 transition-colors">Posts</a> <a href="https://github.com/yanqiw" class="hover:text-cyan-400 transition-colors">GitHub</a> </div> </nav> </header> <main class="pt-24 pb-12">  <article class="max-w-3xl mx-auto px-6 py-12"> <header class="mb-12"> <div class="flex items-center gap-4 mb-6"> <span class="px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"> React Native 相关内容 </span> <time class="text-sm text-slate-500 font-mono"> 2016/3/5 </time> </div> <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6"> 使用docker创建ReactJS开发环境，实时编译JSX </h1>  </header> <div class="prose prose-invert prose-cyan max-w-none prose-headings:font-bold prose-a:text-cyan-400 prose-pre:glass prose-pre:rounded-2xl">  <h2 id="为什么要使用docker来创建reactjs开发环境">为什么要使用docker来创建ReactJS开发环境</h2>
+<p>刚刚开始学习ReactJS的时候，折腾了很久才搭建起开发环境。所以，我就开始尝试将ReactJS的编译环境打包在docker中，并使用gulp来动态编译。后来一直在使用这个docker镜像，来帮助我开发ReactJS应用。</p>
+<h2 id="使用到的技术">使用到的技术</h2>
+<ul>
+<li>docker</li>
+<li>gulp</li>
+<li>browserify</li>
+</ul>
+<h2 id="创建镜像">创建镜像</h2>
+<p>首先，要根据自己的需要创建一个reactJS编译环境的镜像。</p>
+<p><strong>Dockerfile</strong></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="yml"><code><span class="line"><span style="color:#9ECBFF">FROM node</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#9ECBFF">RUN mkdir /runtime</span></span>
+<span class="line"><span style="color:#9ECBFF">WORKDIR /runtime</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#9ECBFF">RUN npm init -y</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">#install gulp for auto build</span></span>
+<span class="line"><span style="color:#9ECBFF">RUN npm install --save-dev gulp gulp-uglify;</span></span>
+<span class="line"><span style="color:#9ECBFF">RUN npm install --save-dev del;</span></span>
+<span class="line"><span style="color:#9ECBFF">RUN npm install --save-dev vinyl-source-stream;</span></span>
+<span class="line"><span style="color:#9ECBFF">RUN npm install --save-dev browserify;</span></span>
+<span class="line"><span style="color:#9ECBFF">RUN npm install --save-dev reactify;</span></span>
+<span class="line"><span style="color:#9ECBFF">RUN npm install --save-dev react react-dom;</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">#install react and build tool</span></span>
+<span class="line"><span style="color:#6A737D">#RUN npm install -g browserify</span></span>
+<span class="line"><span style="color:#6A737D">#RUN npm install --save-dev react react-dom babelify babel-preset-react</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">#add gulpfile</span></span>
+<span class="line"><span style="color:#9ECBFF">ADD . /runtime</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#9ECBFF">CMD ["bash", "run.sh"]</span></span>
+<span class="line"></span></code></pre>
+<p><code>gulpfile.js</code>用来定义gulp要做的事情。</p>
+<p><strong>gulpfile.js</strong></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="javascript"><code><span class="line"><span style="color:#6A737D">/* gulpfile.js */</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// Load some modules which are installed through NPM.</span></span>
+<span class="line"><span style="color:#F97583">var</span><span style="color:#E1E4E8"> gulp </span><span style="color:#F97583">=</span><span style="color:#B392F0"> require</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'gulp'</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#F97583">var</span><span style="color:#E1E4E8"> browserify </span><span style="color:#F97583">=</span><span style="color:#B392F0"> require</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'browserify'</span><span style="color:#E1E4E8">);  </span><span style="color:#6A737D">// Bundles JS.</span></span>
+<span class="line"><span style="color:#F97583">var</span><span style="color:#E1E4E8"> del </span><span style="color:#F97583">=</span><span style="color:#B392F0"> require</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'del'</span><span style="color:#E1E4E8">);  </span><span style="color:#6A737D">// Deletes files.</span></span>
+<span class="line"><span style="color:#F97583">var</span><span style="color:#E1E4E8"> reactify </span><span style="color:#F97583">=</span><span style="color:#B392F0"> require</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'reactify'</span><span style="color:#E1E4E8">);  </span><span style="color:#6A737D">// Transforms React JSX to JS.</span></span>
+<span class="line"><span style="color:#F97583">var</span><span style="color:#E1E4E8"> source </span><span style="color:#F97583">=</span><span style="color:#B392F0"> require</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'vinyl-source-stream'</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// Define some paths.</span></span>
+<span class="line"><span style="color:#F97583">var</span><span style="color:#E1E4E8"> paths </span><span style="color:#F97583">=</span><span style="color:#E1E4E8"> {</span></span>
+<span class="line"><span style="color:#E1E4E8">  app_js: [</span><span style="color:#9ECBFF">'./src/js/app.js'</span><span style="color:#E1E4E8">],</span></span>
+<span class="line"><span style="color:#E1E4E8">  js: [</span><span style="color:#9ECBFF">'./src/js/*.js'</span><span style="color:#E1E4E8">],</span></span>
+<span class="line"><span style="color:#E1E4E8">};</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// An example of a dependency task, it will be run before the css/js tasks.</span></span>
+<span class="line"><span style="color:#6A737D">// Dependency tasks should call the callback to tell the parent task that</span></span>
+<span class="line"><span style="color:#6A737D">// they're done.</span></span>
+<span class="line"><span style="color:#E1E4E8">gulp.</span><span style="color:#B392F0">task</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'clean'</span><span style="color:#E1E4E8">, </span><span style="color:#F97583">function</span><span style="color:#E1E4E8">(</span><span style="color:#FFAB70">done</span><span style="color:#E1E4E8">) {</span></span>
+<span class="line"><span style="color:#B392F0">  del</span><span style="color:#E1E4E8">([</span><span style="color:#9ECBFF">'build'</span><span style="color:#E1E4E8">], done);</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// Our JS task. It will Browserify our code and compile React JSX files.</span></span>
+<span class="line"><span style="color:#E1E4E8">gulp.</span><span style="color:#B392F0">task</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'js'</span><span style="color:#E1E4E8">, </span><span style="color:#F97583">function</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#6A737D">  // Browserify/bundle the JS.</span></span>
+<span class="line"><span style="color:#E1E4E8">  console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'trigger browserify'</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#B392F0">  browserify</span><span style="color:#E1E4E8">(paths.app_js)</span></span>
+<span class="line"><span style="color:#E1E4E8">    .</span><span style="color:#B392F0">transform</span><span style="color:#E1E4E8">(reactify)</span></span>
+<span class="line"><span style="color:#E1E4E8">    .</span><span style="color:#B392F0">bundle</span><span style="color:#E1E4E8">()</span></span>
+<span class="line"><span style="color:#E1E4E8">    .</span><span style="color:#B392F0">pipe</span><span style="color:#E1E4E8">(</span><span style="color:#B392F0">source</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'bundle.js'</span><span style="color:#E1E4E8">))</span></span>
+<span class="line"><span style="color:#E1E4E8">    .</span><span style="color:#B392F0">pipe</span><span style="color:#E1E4E8">(gulp.</span><span style="color:#B392F0">dest</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'./src/'</span><span style="color:#E1E4E8">));</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#E1E4E8">gulp.</span><span style="color:#B392F0">task</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'called'</span><span style="color:#E1E4E8">, </span><span style="color:#F97583">function</span><span style="color:#E1E4E8">(){</span></span>
+<span class="line"><span style="color:#E1E4E8">  console.</span><span style="color:#B392F0">log</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">"Call"</span><span style="color:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#E1E4E8">})</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// Rerun tasks whenever a file changes.</span></span>
+<span class="line"><span style="color:#E1E4E8">gulp.</span><span style="color:#B392F0">task</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'watch'</span><span style="color:#E1E4E8">, </span><span style="color:#F97583">function</span><span style="color:#E1E4E8">() {</span></span>
+<span class="line"><span style="color:#E1E4E8">  gulp.</span><span style="color:#B392F0">watch</span><span style="color:#E1E4E8">(paths.js, [</span><span style="color:#9ECBFF">'called'</span><span style="color:#E1E4E8">,</span><span style="color:#9ECBFF">'js'</span><span style="color:#E1E4E8">]);</span></span>
+<span class="line"><span style="color:#E1E4E8">});</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D">// The default task (called when we run `gulp` from cli)</span></span>
+<span class="line"><span style="color:#E1E4E8">gulp.</span><span style="color:#B392F0">task</span><span style="color:#E1E4E8">(</span><span style="color:#9ECBFF">'default'</span><span style="color:#E1E4E8">, [</span><span style="color:#9ECBFF">'watch'</span><span style="color:#E1E4E8">, </span><span style="color:#9ECBFF">'js'</span><span style="color:#E1E4E8">]);</span></span>
+<span class="line"></span></code></pre>
+<p><code>run.sh</code>用启动gulp脚本，对本地文件进行监视，一旦有文件改动，立即执行编译。</p>
+<p><strong>run.sh</strong></p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>#!/usr/bin/bash</span></span>
+<span class="line"><span>./node_modules/gulp/bin/gulp.js</span></span>
+<span class="line"><span></span></span></code></pre>
+<h2 id="镜像构建">镜像构建</h2>
+<p>将<code>Dockerfile</code>,<code>gulpfile.js</code>, <code>run.sh</code>三个文件放在同一目录下。 运行</p>
+<p><code>docker build -t reactjs-builder-runtime .</code></p>
+<h2 id="运行">运行</h2>
+<p>在项目静态文件夹中运行，请将ReactJS项目入口文件名设置为<code>app.js</code>。 如果项目的入口文件不是<code>app.js</code>,可以修改<code>gulpfile.js</code>中的路径设置。</p>
+<p><code>docker run --name project-name-reactjs-builder -v "$PWD":/runtime/src -d reactjs-builder-runtime</code></p>
+<p>查看日志：</p>
+<p><code>docker logs -f project-name-reactjs-builder</code></p>
+<h2 id="代码和镜像托管">代码和镜像托管</h2>
+<ul>
+<li>项目代码托管在<a href="https://github.com/yanqiw/reactjs-builder-runtime">yanqiw/reactjs-builder-runtime</a></li>
+<li>镜像托管在<a href="https://hub.docker.com/r/yanqiw/reactjs-builder-runtime/">react-runtime</a></li>
+</ul>
+<h2 id="参考文章">参考文章</h2>
+<ul>
+<li>TBD</li>
+</ul>  </div> </article>  </main> <footer class="border-t border-white/5 py-12"> <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6"> <p class="text-sm text-slate-500">
+&copy; 2026 Francis Wang. Built with Astro & Bento.
+</p> <div class="flex gap-6 text-slate-400"> <!-- Social links could go here --> </div> </div> </footer> </body></html> 

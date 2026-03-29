@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('posts');
+	const categories = [...new Set(posts.map((post) => post.data.category))];
+	
+	return categories.map((category) => {
+		const categorySlug = category?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') || 'uncategorized';
+		return {
+			params: { category: categorySlug },
+			props: { 
+				categoryName: category,
+				posts: posts.filter((post) => post.data.category === category)
+			},
+		};
+	});
+}
+
+const { categoryName, posts } = Astro.props;
+---
+
+<BaseLayout title={`Category: ${categoryName} | Francis Wang`}>
+	<section class="max-w-7xl mx-auto px-6 mb-20">
+		<div class="flex flex-col gap-2 mb-12">
+			<span class="text-cyan-400 font-mono text-sm tracking-widest uppercase">Category Archive</span>
+			<h1 class="text-4xl md:text-6xl font-bold tracking-tight">
+				{categoryName}
+			</h1>
+		</div>
+
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+			{posts.map((post) => (
+				<PostCard post={post} />
+			))}
+		</div>
+	</section>
+</BaseLayout>
