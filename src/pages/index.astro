@@ -47,15 +47,21 @@ const remainingPosts = posts.slice(1);
 				/>
 			))}
 
-			<!-- Categories Card (Visual Placeholder) -->
-			<div class="glass rounded-3xl p-6 flex flex-col gap-3 md:col-span-1 md:row-span-1 overflow-hidden">
-				<h3 class="text-xs font-bold uppercase tracking-widest text-slate-500">Categories</h3>
+			<!-- Categories Card -->
+			<div class="glass rounded-3xl p-6 flex flex-col gap-3 md:col-span-1 md:row-span-1 overflow-hidden relative group">
+				<div class="flex justify-between items-center">
+					<h3 class="text-xs font-bold uppercase tracking-widest text-slate-500">Categories</h3>
+					<a href="/categories" class="text-[10px] uppercase tracking-wider text-cyan-400 hover:text-cyan-300 transition-colors">View All</a>
+				</div>
 				<div class="flex flex-wrap gap-2">
-					{Array.from(new Set(posts.map(p => p.data.category))).map(cat => (
-						<span class="px-2 py-1 rounded-lg bg-slate-800 text-[10px] border border-white/5 whitespace-nowrap">
-							{cat}
-						</span>
-					))}
+					{Array.from(new Set(posts.map(p => p.data.category))).map(cat => {
+						const catSlug = cat?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') || 'uncategorized';
+						return (
+							<a href={`/category/${catSlug}`} class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] border border-white/5 whitespace-nowrap transition-colors">
+								{cat}
+							</a>
+						);
+					})}
 				</div>
 			</div>
 		</BentoGrid>

@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = await getCollection('posts', ({ data }) => {
+	return data.draft !== true;
+});
+
+const categories = posts.reduce((acc, post) => {
+	const category = post.data.category || 'Uncategorized';
+	if (!acc[category]) {
+		acc[category] = [];
+	}
+	acc[category].push(post);
+	return acc;
+}, {} as Record<string, any[]>);
+
+const categoryList = Object.keys(categories).sort();
+---
+
+<BaseLayout title="Categories | Francis Wang">
+	<section class="max-w-7xl mx-auto px-6 mb-20">
+		<div class="flex flex-col gap-2 mb-12">
+			<span class="text-cyan-400 font-mono text-sm tracking-widest uppercase">Browse by Category</span>
+			<h1 class="text-4xl md:text-6xl font-bold tracking-tight">
+				All Categories
+			</h1>
+		</div>
+
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+			{categoryList.map((category) => {
+				const categorySlug = category?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') || 'uncategorized';
+				return (
+					<a href={`/category/${categorySlug}`} class="group glass rounded-3xl p-6 flex flex-col justify-between hover:border-cyan-500/50 transition-colors h-full">
+						<div class="flex flex-col gap-2">
+							<h2 class="text-2xl font-bold text-slate-200 group-hover:text-cyan-400 transition-colors">{category}</h2>
+							<p class="text-slate-400 text-sm">
+								{categories[category].length} {categories[category].length === 1 ? 'post' : 'posts'}
+							</p>
+						</div>
+					</a>
+				);
+			})}
+		</div>
+	</section>
+</BaseLayout>
