@@ -1,0 +1,116 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Search | Francis Wang">
+	<section class="max-w-4xl mx-auto px-6 mb-20">
+		<div class="flex flex-col gap-2 mb-8">
+			<span class="text-cyan-400 font-mono text-sm tracking-widest uppercase">Explore</span>
+			<h1 class="text-4xl md:text-6xl font-bold tracking-tight">
+				Search Posts
+			</h1>
+		</div>
+
+		<div class="mb-12 relative">
+			<input
+				type="text"
+				id="search-input"
+				placeholder="Search by title, description, or category..."
+				class="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-6 py-4 text-lg text-slate-200 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all placeholder:text-slate-500"
+			/>
+            <div class="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+		</div>
+
+		<div id="search-results" class="flex flex-col gap-4">
+			<!-- Results will be injected here -->
+            <p id="search-loading" class="text-slate-400">Loading search index...</p>
+		</div>
+	</section>
+</BaseLayout>
+
+<script>
+    import Fuse from 'fuse.js';
+
+    let fuse: Fuse<any>;
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const searchResults = document.getElementById('search-results');
+    const loadingMsg = document.getElementById('search-loading');
+
+    // Fetch the search index
+    async function fetchSearchIndex() {
+        try {
+            const response = await fetch('/search.json');
+            const data = await response.json();
+
+            fuse = new Fuse(data, {
+                keys: ['title', 'description', 'category'],
+                includeMatches: true,
+                threshold: 0.4,
+            });
+
+            if (loadingMsg) loadingMsg.style.display = 'none';
+            if (searchInput) searchInput.disabled = false;
+        } catch (error) {
+            console.error('Error fetching search index:', error);
+            if (loadingMsg) loadingMsg.textContent = 'Failed to load search index.';
+        }
+    }
+
+    function displayResults(results: any[]) {
+        if (!searchResults) return;
+
+        searchResults.innerHTML = '';
+
+        if (results.length === 0 && searchInput.value.trim() !== '') {
+            searchResults.innerHTML = '<p class="text-slate-400">No results found.</p>';
+            return;
+        }
+
+        results.forEach(result => {
+            const post = result.item;
+            const date = new Date(post.pubDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+
+            const resultHtml = `
+                <a href="/posts/${post.slug}" class="group glass rounded-2xl p-6 flex flex-col gap-3 hover:border-cyan-500/50 transition-colors">
+                    <div class="flex justify-between items-start gap-4">
+                        <h2 class="text-xl font-bold text-slate-200 group-hover:text-cyan-400 transition-colors">${post.title}</h2>
+                        <time class="text-xs text-slate-500 font-mono whitespace-nowrap pt-1">${date}</time>
+                    </div>
+                    <p class="text-sm text-slate-400 line-clamp-2">${post.description || ''}</p>
+                    <div class="flex mt-2">
+                        <span class="text-[10px] uppercase tracking-wider text-cyan-400/80 font-mono">${post.category}</span>
+                    </div>
+                </a>
+            `;
+            searchResults.innerHTML += resultHtml;
+        });
+    }
+
+    if (searchInput) {
+        searchInput.disabled = true; // Disable until index loads
+
+        searchInput.addEventListener('input', (e) => {
+            const target = e.target as HTMLInputElement;
+            const query = target.value;
+
+            if (query.trim() === '') {
+                if (searchResults) searchResults.innerHTML = '';
+                return;
+            }
+
+            if (fuse) {
+                const results = fuse.search(query);
+                displayResults(results);
+            }
+        });
+    }
+
+    // Initialize
+    fetchSearchIndex();
+</script>
