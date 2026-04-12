@@ -55,7 +55,7 @@ const remainingPosts = posts.slice(1);
 				</div>
 				<div class="flex flex-wrap gap-2">
 					{Array.from(new Set(posts.map(p => p.data.category))).map(cat => {
-						const catSlug = cat?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') || 'uncategorized';
+						const catSlug = cat?.toLowerCase().trim().replace(/\s+/g, '-') || 'uncategorized';
 						return (
 							<a href={`/category/${catSlug}`} class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] border border-white/5 whitespace-nowrap transition-colors">
 								{cat}

@@ -8,7 +8,7 @@ export async function getStaticPaths() {
 	const categories = [...new Set(posts.map((post) => post.data.category))];
 	
 	return categories.map((category) => {
-		const categorySlug = category?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') || 'uncategorized';
+		const categorySlug = category?.toLowerCase().trim().replace(/\s+/g, '-') || 'uncategorized';
 		return {
 			params: { category: categorySlug },
 			props: { 
