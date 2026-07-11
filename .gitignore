@@ -34,3 +34,6 @@ _legacy/
 # Superpowers brainstorming/plans
 .superpowers/
 docs/superpowers/
+
+# Local isolated worktrees
+.worktrees/
