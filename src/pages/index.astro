@@ -1,15 +1,5 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import HomePage from '../components/HomePage.astro';
 ---
 
-<BaseLayout title="Francis Wang" lang="zh" description="AI 思考与开源项目">
-	<section class="mx-auto flex min-h-[65vh] max-w-4xl flex-col items-start justify-center px-6">
-		<p class="eyebrow">FRANCIS WANG · AI & OPEN SOURCE</p>
-		<h1 class="mt-5 text-5xl font-semibold tracking-[-0.04em] text-white md:text-7xl">选择语言</h1>
-		<p class="mt-5 max-w-2xl text-lg leading-8 text-slate-400">关于人工智能、协作系统与开源软件的持续思考。</p>
-		<div class="mt-10 flex flex-wrap gap-4">
-			<a class="button-primary" href="/zh/">进入中文站</a>
-			<a class="button-secondary" href="/en/">Continue in English</a>
-		</div>
-	</section>
-</BaseLayout>
+<HomePage lang="zh" />

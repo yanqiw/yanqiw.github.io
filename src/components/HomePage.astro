@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { featuredProjects } from '../data/projects';
+import { getGitHubProject } from '../lib/github';
+import NeuralField from './NeuralField.astro';
+import ProjectCard from './ProjectCard.astro';
+
+interface Props {
+	lang: 'zh' | 'en';
+}
+
+const { lang } = Astro.props;
+const isZh = lang === 'zh';
+const project = await getGitHubProject(featuredProjects[0]);
+const copy = isZh ? {
+	title: 'Francis Wang · AI 思考与开源项目',
+	description: '记录 AI 领域的思考，构建开放、可验证的智能体协作工具。',
+	lineOne: '研究人与智能体',
+	lineTwo: '如何一起工作。',
+	intro: '我是 Francis Wang。这里记录我对 AI 工程、多智能体协作和软件组织方式的思考，也公开展示正在构建的工具。',
+	writing: '写作',
+	writingAlt: 'WRITING',
+	empty: '新的 AI 文章正在路上。',
+	emptyDetail: '旧文章已经归档，新的写作将从这里开始。',
+} : {
+	title: 'Francis Wang · AI Notes & Open Source',
+	description: 'Notes on AI systems and open-source tools for trustworthy agent collaboration.',
+	lineOne: 'Exploring how people',
+	lineTwo: 'and agents work together.',
+	intro: "I'm Francis Wang. I write about AI engineering, multi-agent coordination, and the organizational ideas behind software—and publish the tools I build along the way.",
+	writing: 'WRITING',
+	writingAlt: '写作',
+	empty: 'New writing on AI is coming.',
+	emptyDetail: 'The legacy archive is now closed; the next chapter starts here.',
+};
+---
+
+<BaseLayout title={copy.title} description={copy.description} lang={lang} alternatePath={isZh ? '/en/' : '/zh/'}>
+	<section class="neural-hero">
+		<NeuralField />
+		<div class="hero-glow"></div>
+		<div class="relative z-10 mx-auto flex min-h-[72vh] max-w-6xl flex-col justify-center px-6 pb-20 pt-16 md:min-h-[78vh] md:pb-28">
+			<p class="eyebrow">AI SYSTEMS · AGENTS · OPEN SOURCE</p>
+			<h1 class="mt-7 max-w-5xl text-5xl font-semibold leading-[.98] tracking-[-0.055em] text-white md:text-7xl lg:text-[5.7rem]">
+				{copy.lineOne}<br /><span class="text-gradient">{copy.lineTwo}</span>
+			</h1>
+			<p class="mt-8 max-w-2xl text-base leading-8 text-slate-400 md:text-lg">{copy.intro}</p>
+			<div class="mt-10 flex items-center gap-3 font-mono text-[.68rem] tracking-[.16em] text-slate-500">
+				<span class="signal-dot"></span><span>HUMAN × AGENT COORDINATION</span>
+			</div>
+		</div>
+	</section>
+	<section id="projects" class="relative z-10 mx-auto max-w-6xl px-6 pb-24"><ProjectCard project={project} lang={lang} /></section>
+	<section id="writing" class="mx-auto max-w-6xl px-6 pb-28">
+		<div class="section-rule"><span>{copy.writing}</span><span>{copy.writingAlt}</span></div>
+		<div class="empty-state"><p>{copy.empty}</p><span>{copy.emptyDetail}</span></div>
+	</section>
+</BaseLayout>
+
+<style>
+	.neural-hero { position: relative; isolation: isolate; overflow: hidden; }
+	.hero-glow { position: absolute; inset: 12% 10% auto; height: 26rem; border-radius: 50%; background: radial-gradient(circle, rgba(37, 99, 235, .13), rgba(20, 184, 166, .06) 42%, transparent 72%); filter: blur(38px); pointer-events: none; }
+	.signal-dot { width: .4rem; height: .4rem; border-radius: 999px; background: #5eead4; box-shadow: 0 0 14px rgba(94, 234, 212, .9); }
+</style>

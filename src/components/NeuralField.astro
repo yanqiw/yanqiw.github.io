@@ -1,0 +1,24 @@
+<div class="neural-field" data-neural-field aria-hidden="true">
+	<canvas></canvas>
+</div>
+
+<script>
+	import '../scripts/neural-field';
+</script>
+
+<style>
+	.neural-field {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		pointer-events: none;
+		mask-image: linear-gradient(to bottom, black 58%, transparent 100%);
+	}
+
+	canvas {
+		display: block;
+		width: 100%;
+		height: 100%;
+		opacity: 0.82;
+	}
+</style>

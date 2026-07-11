@@ -49,11 +49,13 @@ test('legacy posts are archived and excluded by one publication predicate', asyn
 test('localized home routes and project fallback are part of the source contract', async () => {
   const zh = await text('src/pages/zh/index.astro');
   const en = await text('src/pages/en/index.astro');
+  const home = await text('src/components/HomePage.astro');
   const layout = await text('src/layouts/BaseLayout.astro');
   const projects = await text('src/data/projects.ts');
 
-  assert.match(zh, /<ProjectCard project=\{project\} lang="zh"/);
-  assert.match(en, /<ProjectCard project=\{project\} lang="en"/);
+  assert.match(zh, /<HomePage lang="zh"/);
+  assert.match(en, /<HomePage lang="en"/);
+  assert.match(home, /<ProjectCard project=\{project\} lang=\{lang\}/);
   assert.match(layout, /hreflang/);
   assert.match(projects, /yanqiw\/comem/);
   assert.match(projects, /Coordination Memory/);
@@ -77,4 +79,37 @@ test('Pages workflow is reproducible and cancels superseded deploys', async () =
   assert.match(workflow, /npm ci/);
   assert.match(workflow, /ASTRO_TELEMETRY_DISABLED:\s*['"]?1/);
   assert.match(workflow, /cancel-in-progress:\s*true/);
+});
+
+test('neural field is decorative, responsive, and progressively enhanced', async () => {
+	const component = await text('src/components/NeuralField.astro');
+	const renderer = await text('src/scripts/neural-field.ts');
+
+	assert.match(component, /data-neural-field/);
+	assert.match(component, /aria-hidden="true"/);
+	assert.match(component, /pointer-events:\s*none/);
+	assert.match(renderer, /prefers-reduced-motion/);
+	assert.match(renderer, /pointer:\s*coarse/);
+	assert.match(renderer, /Math\.min\(window\.devicePixelRatio[^,]*,\s*2\)/);
+	assert.match(renderer, /visibilitychange/);
+	assert.match(renderer, /requestAnimationFrame/);
+});
+
+test('root and localized routes share one homepage with a quiet language switch', async () => {
+	const rootPage = await text('src/pages/index.astro');
+	const zh = await text('src/pages/zh/index.astro');
+	const en = await text('src/pages/en/index.astro');
+	const home = await text('src/components/HomePage.astro');
+	const layout = await text('src/layouts/BaseLayout.astro');
+
+	assert.match(rootPage, /HomePage/);
+	assert.match(rootPage, /lang="zh"/);
+	assert.doesNotMatch(rootPage, /选择语言/);
+	assert.match(zh, /HomePage/);
+	assert.match(zh, /lang="zh"/);
+	assert.match(en, /HomePage/);
+	assert.match(en, /lang="en"/);
+	assert.match(home, /NeuralField/);
+	assert.match(home, /ProjectCard/);
+	assert.match(layout, /class="language-switch"/);
 });
