@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { featuredProjects } from '../../data/projects';
+import { getGitHubProject } from '../../lib/github';
+
+const project = await getGitHubProject(featuredProjects[0]);
+---
+
+<BaseLayout title="Francis Wang · AI 思考与开源项目" description="记录 AI 领域的思考，构建开放、可验证的智能体协作工具。" lang="zh" alternatePath="/en/">
+	<section class="mx-auto max-w-6xl px-6 pb-24 pt-12 md:pt-24">
+		<div class="grid gap-12 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
+			<div>
+				<p class="eyebrow">AI SYSTEMS · AGENTS · OPEN SOURCE</p>
+				<h1 class="mt-6 text-5xl font-semibold tracking-[-0.05em] text-white md:text-7xl">研究人与智能体<br/><span class="text-gradient">如何一起工作。</span></h1>
+			</div>
+			<p class="max-w-xl text-lg leading-8 text-slate-400">我是 Francis Wang。这里记录我对 AI 工程、多智能体协作和软件组织方式的思考，也公开展示正在构建的工具。</p>
+		</div>
+	</section>
+	<section id="projects" class="mx-auto max-w-6xl px-6 pb-20"><ProjectCard project={project} lang="zh" /></section>
+	<section id="writing" class="mx-auto max-w-6xl px-6 pb-28">
+		<div class="section-rule"><span>写作</span><span>WRITING</span></div>
+		<div class="empty-state"><p>新的 AI 文章正在路上。</p><span>旧文章已经归档，新的写作将从这里开始。</span></div>
+	</section>
+</BaseLayout>

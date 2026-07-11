@@ -4,6 +4,7 @@ pubDate: 2026-03-29T11:04:54.865Z
 category: 云原生和微服务架构
 order: 22
 draft: false
+archived: true
 ---
 
 餐饮圈后端容器化实践

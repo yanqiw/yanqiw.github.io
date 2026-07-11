@@ -4,6 +4,7 @@ pubDate: 2026-03-29T11:04:54.866Z
 category: 云原生和微服务架构
 order: 10
 draft: false
+archived: true
 ---
 k8s 自制手册
 =====

@@ -4,6 +4,7 @@ pubDate: 2026-03-29T11:04:54.868Z
 category: 云原生和微服务架构
 order: 23
 draft: false
+archived: true
 ---
 使用 vs-code 开发 springboot 项目
 ====

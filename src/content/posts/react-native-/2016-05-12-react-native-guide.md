@@ -4,6 +4,7 @@ pubDate: 2016-05-12T07:03:57.000Z
 category: React Native 相关内容
 order: 0
 draft: false
+archived: true
 ---
 
 React Native入门总结

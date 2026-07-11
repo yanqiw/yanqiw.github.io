@@ -1,0 +1,37 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { isPublishedPost } from '../../../lib/posts';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('posts', isPublishedPost);
+	return ['zh', 'en'].map((lang) => ({
+		params: { lang },
+		props: {
+			lang,
+			posts: posts
+				.filter((post) => post.data.lang === lang)
+				.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+		},
+	}));
+}
+
+const { lang, posts } = Astro.props as { lang: 'zh' | 'en'; posts: any[] };
+const isZh = lang === 'zh';
+---
+
+<BaseLayout title={isZh ? '写作 · Francis Wang' : 'Writing · Francis Wang'} lang={lang} alternatePath={`/${isZh ? 'en' : 'zh'}/posts/`}>
+	<section class="mx-auto max-w-4xl px-6 py-16 md:py-24">
+		<p class="eyebrow">{isZh ? 'AI 思考' : 'NOTES ON AI'}</p>
+		<h1 class="mt-5 text-5xl font-semibold tracking-[-0.04em] text-white">{isZh ? '写作' : 'Writing'}</h1>
+		<div class="mt-12 divide-y divide-white/10 border-t border-white/10">
+			{posts.map((post) => (
+				<a class="group grid gap-2 py-7 md:grid-cols-[1fr_auto]" href={`/${lang}/posts/${post.id.replace(/\.(md|mdx)$/, '')}/`}>
+					<div><h2 class="text-xl text-slate-200 transition-colors group-hover:text-teal-300">{post.data.title}</h2>{post.data.description && <p class="mt-2 text-slate-500">{post.data.description}</p>}</div>
+					<time class="font-mono text-xs text-slate-600">{post.data.pubDate.toISOString().slice(0, 10)}</time>
+				</a>
+			))}
+			{posts.length === 0 && <p class="py-12 text-slate-500">{isZh ? '新的文章正在路上。' : 'New writing is on the way.'}</p>}
+		</div>
+	</section>
+</BaseLayout>

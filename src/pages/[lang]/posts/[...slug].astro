@@ -1,0 +1,37 @@
+---
+import { getCollection, render } from 'astro:content';
+import PostLayout from '../../../layouts/PostLayout.astro';
+import { isPublishedPost } from '../../../lib/posts';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('posts', isPublishedPost);
+	return posts
+		.filter((post) => post.data.lang === 'zh' || post.data.lang === 'en')
+		.map((post) => {
+			const alternate = post.data.translationKey
+				? posts.find((candidate) =>
+					candidate.data.translationKey === post.data.translationKey &&
+					candidate.data.lang !== post.data.lang)
+				: undefined;
+			return {
+				params: {
+					lang: post.data.lang,
+					slug: post.id.replace(/\.(md|mdx)$/, ''),
+				},
+				props: {
+					post,
+					alternatePath: alternate
+						? `/${alternate.data.lang}/posts/${alternate.id.replace(/\.(md|mdx)$/, '')}/`
+						: undefined,
+				},
+			};
+		});
+}
+
+const { post, alternatePath } = Astro.props;
+const { Content } = await render(post);
+---
+
+<PostLayout post={post} lang={post.data.lang} alternatePath={alternatePath}>
+	<Content />
+</PostLayout>

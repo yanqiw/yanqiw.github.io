@@ -4,6 +4,7 @@ pubDate: 2016-02-21T12:59:49.000Z
 category: 云原生和微服务架构
 order: 25
 draft: false
+archived: true
 ---
 ## 设置cron
 

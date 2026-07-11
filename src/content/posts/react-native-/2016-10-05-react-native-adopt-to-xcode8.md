@@ -4,6 +4,7 @@ pubDate: 2016-10-05T06:23:40.000Z
 category: React Native 相关内容
 order: 30
 draft: false
+archived: true
 ---
 
 React Native 0.27.0 adopt to xcode 8

@@ -1,77 +1,87 @@
 ---
+import '../styles/global.css';
+
 interface Props {
 	title: string;
 	description?: string;
+	lang?: 'zh' | 'en';
+	alternatePath?: string;
 }
 
-const { title, description = "Francis Wang's AI-era blog" } = Astro.props;
+const {
+	title,
+	description = "Francis Wang's notes on AI and open source",
+	lang = 'en',
+	alternatePath,
+} = Astro.props;
+const isZh = lang === 'zh';
+const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={isZh ? 'zh-CN' : 'en'}>
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
+		<meta name="theme-color" content="#080b10" />
 		<title>{title}</title>
 		<meta name="description" content={description} />
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+		<link rel="canonical" href={canonical} />
+		{alternatePath && <link rel="alternate" hreflang={isZh ? 'en' : 'zh-CN'} href={new URL(alternatePath, Astro.site)} />}
+		<link rel="alternate" hreflang="x-default" href={new URL('/', Astro.site)} />
 	</head>
-	<body class="bg-slate-950 text-slate-200 min-h-screen font-sans selection:bg-cyan-500/30">
-		<header class="fixed top-0 w-full z-50 bg-slate-950/50 backdrop-blur-md border-b border-white/10">
-			<nav class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-				<a href="/" class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-					Francis Wang
-				</a>
-				<div class="flex gap-8 text-sm font-medium">
-					<a href="/" class="hover:text-cyan-400 transition-colors">Home</a>
-					<a href="/posts" class="hover:text-cyan-400 transition-colors">Posts</a>
-					<a href="/categories" class="hover:text-cyan-400 transition-colors">Categories</a>
-					<a href="/search" class="hover:text-cyan-400 transition-colors">Search</a>
-					<a href="https://github.com/yanqiw" class="hover:text-cyan-400 transition-colors">GitHub</a>
+	<body>
+		<div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+		<header class="site-header">
+			<nav class="mx-auto flex h-20 max-w-6xl items-center justify-between px-6">
+				<a href={`/${lang}/`} class="wordmark">FW<span>.</span></a>
+				<div class="flex items-center gap-5 text-sm text-slate-400 md:gap-8">
+					<a href={`/${lang}/posts/`} class="nav-link">{isZh ? '写作' : 'Writing'}</a>
+					<a href={`/${lang}/#projects`} class="nav-link">{isZh ? '项目' : 'Projects'}</a>
+					<a href="https://github.com/yanqiw" class="nav-link">GitHub</a>
+					<a class="language-switch" href={alternatePath ?? (isZh ? '/en/' : '/zh/')} aria-label={isZh ? 'Switch to English' : '切换到中文'}>{isZh ? 'EN' : '中文'}</a>
 				</div>
 			</nav>
 		</header>
-		<main class="pt-24 pb-12">
-			<slot />
-		</main>
-		<footer class="border-t border-white/5 py-12">
-			<div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-				<p class="text-sm text-slate-500">
-					&copy; {new Date().getFullYear()} Francis Wang. Built with Astro & Bento.
-				</p>
-				<div class="flex gap-6 text-slate-400">
-					<!-- Social links could go here -->
-				</div>
+		<main><slot /></main>
+		<footer class="border-t border-white/10 py-10">
+			<div class="mx-auto flex max-w-6xl flex-col justify-between gap-3 px-6 text-sm text-slate-500 md:flex-row">
+				<p>© {new Date().getFullYear()} Francis Wang</p>
+				<p>{isZh ? '思考公开，构建开放。' : 'Think in public. Build in the open.'}</p>
 			</div>
 		</footer>
 	</body>
 </html>
 
 <style is:global>
-	:root {
-		--font-sans: 'Inter', sans-serif;
-		--font-mono: 'JetBrains Mono', monospace;
-	}
-	
-	html {
-		scroll-behavior: smooth;
-	}
-
-	body {
-		font-family: var(--font-sans);
-	}
-
-	code, pre {
-		font-family: var(--font-mono);
-	}
-
-	.glass {
-		background: rgba(30, 41, 59, 0.4);
-		backdrop-filter: blur(12px);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-	}
+	:root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+	* { box-sizing: border-box; }
+	html { scroll-behavior: smooth; background: #080b10; }
+	body { margin: 0; min-height: 100vh; overflow-x: hidden; background: radial-gradient(circle at 50% -20%, #172038 0, #080b10 42%); color: #cbd5e1; }
+	a { color: inherit; text-decoration: none; }
+	.site-header { position: relative; z-index: 20; border-bottom: 1px solid rgba(255,255,255,.08); background: rgba(8,11,16,.72); backdrop-filter: blur(18px); }
+	.wordmark { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.1rem; font-weight: 700; letter-spacing: -.04em; color: #fff; }
+	.wordmark span { color: #5eead4; }
+	.nav-link { transition: color .2s ease; }
+	.nav-link:hover { color: #fff; }
+	.language-switch { border: 1px solid rgba(255,255,255,.14); border-radius: 999px; padding: .45rem .75rem; color: #e2e8f0; }
+	.eyebrow { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .72rem; font-weight: 600; letter-spacing: .18em; color: #5eead4; }
+	.text-gradient { background: linear-gradient(105deg,#5eead4,#60a5fa 55%,#c084fc); background-clip: text; color: transparent; }
+	.project-card { position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,.12); border-radius: 1.5rem; padding: clamp(1.5rem,4vw,3rem); background: linear-gradient(135deg,rgba(20,30,48,.88),rgba(11,15,23,.92)); box-shadow: 0 30px 90px rgba(0,0,0,.28); }
+	.project-card::after { content: ""; position: absolute; right: -8rem; top: -10rem; width: 24rem; height: 24rem; border-radius: 50%; background: rgba(45,212,191,.1); filter: blur(45px); pointer-events: none; }
+	.status-dot { display: inline-flex; align-items: center; gap: .5rem; white-space: nowrap; border-radius: 999px; background: rgba(16,185,129,.1); padding: .45rem .7rem; font-size: .7rem; color: #6ee7b7; }
+	.status-dot i { width: .4rem; height: .4rem; border-radius: 50%; background: #34d399; box-shadow: 0 0 12px #34d399; }
+	.button-primary,.button-secondary { display: inline-flex; align-items: center; justify-content: center; border-radius: .7rem; padding: .75rem 1rem; font-size: .86rem; font-weight: 600; transition: transform .2s ease,border-color .2s ease,background .2s ease; }
+	.button-primary { background: #f8fafc; color: #0f172a; }
+	.button-secondary { border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.03); color: #e2e8f0; }
+	.button-primary:hover,.button-secondary:hover { transform: translateY(-2px); border-color: rgba(94,234,212,.45); }
+	.section-rule { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,.1); padding-bottom: .8rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .72rem; letter-spacing: .16em; color: #64748b; }
+	.empty-state { padding: 3.5rem 0; }
+	.empty-state p { margin: 0; font-size: 1.5rem; color: #e2e8f0; }
+	.empty-state span { display: block; margin-top: .7rem; color: #64748b; }
+	.ambient { position: fixed; z-index: -1; width: 30rem; height: 30rem; border-radius: 50%; filter: blur(110px); opacity: .12; pointer-events: none; }
+	.ambient-one { top: 5rem; left: -15rem; background: #14b8a6; }
+	.ambient-two { right: -15rem; top: 30rem; background: #8b5cf6; }
+	@media (max-width: 640px) { .nav-link { display: none; } }
 </style>

@@ -4,6 +4,7 @@ pubDate: 2022-02-26T03:56:00.000Z
 category: 日常生活工作小技巧
 order: 10
 draft: false
+archived: true
 ---
 
 Mac 窗口管理工具

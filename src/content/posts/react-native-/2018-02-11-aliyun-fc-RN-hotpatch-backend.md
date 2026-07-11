@@ -4,6 +4,7 @@ pubDate: 2026-03-29T11:04:54.879Z
 category: React Native 相关内容
 order: 110
 draft: false
+archived: true
 ---
 
 阿里函数计算实现简单React Native热更新后台

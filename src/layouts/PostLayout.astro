@@ -4,13 +4,15 @@ import { type CollectionEntry } from 'astro:content';
 
 interface Props {
 	post: CollectionEntry<'posts'>;
+	lang?: 'zh' | 'en';
+	alternatePath?: string;
 }
 
-const { post } = Astro.props;
+const { post, lang = 'en', alternatePath } = Astro.props;
 const { title, pubDate, category, description } = post.data;
 ---
 
-<BaseLayout title={`${title} | Francis Wang`} description={description}>
+<BaseLayout title={`${title} | Francis Wang`} description={description} lang={lang} alternatePath={alternatePath}>
 	<article class="max-w-3xl mx-auto px-6 py-12">
 		<header class="mb-12">
 			<div class="flex items-center gap-4 mb-6">
@@ -41,14 +43,20 @@ const { title, pubDate, category, description } = post.data;
 	}
 	
 	.prose h2 {
-		@apply text-2xl mt-12 mb-6 text-cyan-500/90;
+		margin: 3rem 0 1.5rem;
+		font-size: 1.5rem;
+		line-height: 2rem;
+		color: rgba(6, 182, 212, .9);
 	}
 	
 	.prose p {
-		@apply leading-relaxed text-slate-300 mb-6;
+		margin-bottom: 1.5rem;
+		line-height: 1.625;
+		color: #cbd5e1;
 	}
 
     .prose img {
-        @apply rounded-3xl border border-white/10;
+		border: 1px solid rgba(255, 255, 255, .1);
+		border-radius: 1.5rem;
     }
 </style>

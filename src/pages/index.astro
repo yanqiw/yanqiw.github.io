@@ -1,69 +1,15 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import BentoGrid from '../components/BentoGrid.astro';
-import PostCard from '../components/PostCard.astro';
-
-const posts = (await getCollection('posts', ({ data }) => {
-	return data.draft !== true;
-})).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-
-const featuredPost = posts[0];
-const remainingPosts = posts.slice(1);
 ---
 
-<BaseLayout title="Francis Wang | AI-Era Blog">
-	<section class="max-w-7xl mx-auto px-6 mb-20">
-		<div class="flex flex-col gap-2 mb-12">
-			<span class="text-cyan-400 font-mono text-sm tracking-widest uppercase">Latest Updates</span>
-			<h1 class="text-5xl md:text-7xl font-bold tracking-tight">
-				Insights in the <br/>
-				<span class="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent italic">AI Era.</span>
-			</h1>
+<BaseLayout title="Francis Wang" lang="zh" description="AI 思考与开源项目">
+	<section class="mx-auto flex min-h-[65vh] max-w-4xl flex-col items-start justify-center px-6">
+		<p class="eyebrow">FRANCIS WANG · AI & OPEN SOURCE</p>
+		<h1 class="mt-5 text-5xl font-semibold tracking-[-0.04em] text-white md:text-7xl">选择语言</h1>
+		<p class="mt-5 max-w-2xl text-lg leading-8 text-slate-400">关于人工智能、协作系统与开源软件的持续思考。</p>
+		<div class="mt-10 flex flex-wrap gap-4">
+			<a class="button-primary" href="/zh/">进入中文站</a>
+			<a class="button-secondary" href="/en/">Continue in English</a>
 		</div>
-
-		<BentoGrid>
-			<!-- Featured Card -->
-			{featuredPost && (
-				<PostCard 
-					post={featuredPost} 
-					class="md:col-span-2 md:row-span-2"
-				/>
-			)}
-			
-			<!-- Introduction Card -->
-			<div class="glass rounded-3xl p-8 flex flex-col justify-center bg-gradient-to-br from-indigo-500/10 to-purple-500/10 md:col-span-1 md:row-span-1">
-				<h2 class="text-xl font-bold mb-2">Hello, I'm Frank.</h2>
-				<p class="text-slate-400 text-sm leading-relaxed">
-					Documenting my journey through Docker, Kubernetes, and AI-driven architecture.
-				</p>
-			</div>
-
-			<!-- Remaining Posts -->
-			{remainingPosts.slice(0, 5).map((post, index) => (
-				<PostCard 
-					post={post} 
-					class={index === 0 ? "md:col-span-1 md:row-span-2" : "md:col-span-1 md:row-span-1"}
-				/>
-			))}
-
-			<!-- Categories Card -->
-			<div class="glass rounded-3xl p-6 flex flex-col gap-3 md:col-span-1 md:row-span-1 overflow-hidden relative group">
-				<div class="flex justify-between items-center">
-					<h3 class="text-xs font-bold uppercase tracking-widest text-slate-500">Categories</h3>
-					<a href="/categories" class="text-[10px] uppercase tracking-wider text-cyan-400 hover:text-cyan-300 transition-colors">View All</a>
-				</div>
-				<div class="flex flex-wrap gap-2">
-					{Array.from(new Set(posts.map(p => p.data.category))).map(cat => {
-						const catSlug = cat?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') || 'uncategorized';
-						return (
-							<a href={`/category/${catSlug}`} class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] border border-white/5 whitespace-nowrap transition-colors">
-								{cat}
-							</a>
-						);
-					})}
-				</div>
-			</div>
-		</BentoGrid>
 	</section>
 </BaseLayout>

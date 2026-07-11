@@ -4,6 +4,7 @@ pubDate: 2016-03-05T00:33:00.000Z
 category: React Native 相关内容
 order: 10
 draft: false
+archived: true
 ---
 ## 为什么要使用docker来创建ReactJS开发环境
 

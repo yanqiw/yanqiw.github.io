@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { featuredProjects } from '../../data/projects';
+import { getGitHubProject } from '../../lib/github';
+
+const project = await getGitHubProject(featuredProjects[0]);
+---
+
+<BaseLayout title="Francis Wang · AI Notes & Open Source" description="Notes on AI systems and open-source tools for trustworthy agent collaboration." lang="en" alternatePath="/zh/">
+	<section class="mx-auto max-w-6xl px-6 pb-24 pt-12 md:pt-24">
+		<div class="grid gap-12 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
+			<div>
+				<p class="eyebrow">AI SYSTEMS · AGENTS · OPEN SOURCE</p>
+				<h1 class="mt-6 text-5xl font-semibold tracking-[-0.05em] text-white md:text-7xl">Exploring how people<br/><span class="text-gradient">and agents work together.</span></h1>
+			</div>
+			<p class="max-w-xl text-lg leading-8 text-slate-400">I'm Francis Wang. I write about AI engineering, multi-agent coordination, and the organizational ideas behind software—and publish the tools I build along the way.</p>
+		</div>
+	</section>
+	<section id="projects" class="mx-auto max-w-6xl px-6 pb-20"><ProjectCard project={project} lang="en" /></section>
+	<section id="writing" class="mx-auto max-w-6xl px-6 pb-28">
+		<div class="section-rule"><span>WRITING</span><span>写作</span></div>
+		<div class="empty-state"><p>New writing on AI is coming.</p><span>The legacy archive is now closed; the next chapter starts here.</span></div>
+	</section>
+</BaseLayout>

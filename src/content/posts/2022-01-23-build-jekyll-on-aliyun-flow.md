@@ -4,6 +4,7 @@ pubDate: 2026-03-29T11:04:54.869Z
 category: 云原生和微服务架构
 order: 20
 draft: false
+archived: true
 ---
 
 使用“阿里云-云效”构建 jekyll 博客

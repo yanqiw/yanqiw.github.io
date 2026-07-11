@@ -4,6 +4,7 @@ pubDate: 2026-03-29T11:04:54.871Z
 category: 云原生和微服务架构
 order: 21
 draft: false
+archived: true
 ---
 
 使用 iPad 满足移动状态日常工作

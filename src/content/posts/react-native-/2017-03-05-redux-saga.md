@@ -4,6 +4,7 @@ pubDate: 2017-03-05T09:03:51.000Z
 category: React Native 相关内容
 order: 20
 draft: false
+archived: true
 ---
 
 Redux Saga 实践
